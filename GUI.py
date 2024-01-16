@@ -8,13 +8,14 @@
 # 3. A Plot Area that live updates based on Sensor level PPM vs Time.
 # 4. A Clock that shows the current time.
 
-import time                             # Time Library
-import random                           # Random Number Library
-import numpy as np                      # Numpy Library (Statistical Functions)
-from PyQt6.QtWidgets import *           # PyQt6 Library (GUI)
-from PyQt6.QtCore import *              # PyQt6 Library (GUI)
-from pyqtgraph import PlotWidget, plot  # pip install pyqtgraph
-
+import time                                         # Time Library
+import random                                       # Random Number Library
+import numpy as np                                  # Numpy Library (Statistical Functions)
+from PyQt6.QtWidgets import *                       # PyQt6 Library (GUI)
+from PyQt6.QtCore import *                          # PyQt6 Library (GUI)
+from pyqtgraph import PlotWidget, plot              # pip install pyqtgraph
+from inputs.randomInputGen import randomInputGen    # Imports randomInputGen Class from inputs/randomInputGen.py
+randomInputGen()
 # Main Window Class
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -44,10 +45,12 @@ class MainWindow(QMainWindow):
         
         # Function to Create Clock Widget: Returns Current System Time
         def create_clock(label):
-            widget = QLabel(label)
-            widget.setFrameShape(QFrame.Shape.Box)
-            widget.setFrameShadow(QFrame.Shadow.Plain)
-            widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            widget = QLabel(label)                              # Using A Label (Text) To Display Time
+            widget.setFrameShape(QFrame.Shape.Box)              # Creates Box Around Widget
+            widget.setFrameShadow(QFrame.Shadow.Plain)          # Removes Shadow From Box
+            widget.setAlignment(Qt.AlignmentFlag.AlignCenter)   # Aligns Text To Center
+            
+            # Want this to be in standard Time 
             widget.setText(time.strftime("%H:%M:%S"))
             return widget
         
@@ -57,14 +60,19 @@ class MainWindow(QMainWindow):
             widget.setLabel('left', 'PPM', units='PPM')
             widget.setLabel('bottom', 'Time', units='s')
             widget.showGrid(x=True, y=True)
-            widget.setBackground('black')        
+            widget.setBackground('w')
+            
+            # array of time (s) of same length as data
+            s = np.linspace(0, 100, len(data))
+            
+            widget.plot(s, data)        
             return widget
         
 
         data = open("data.txt", "r")
         dataARR = []
         for line in data.readlines():
-            dataARR.append(int(line))
+            dataARR.append(float(line))
             
         layout.addWidget(create_log("Event Log"), 0, 0)
         layout.addWidget(create_status("Status"), 0, 3)
