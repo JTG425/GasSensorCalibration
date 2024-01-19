@@ -13,9 +13,14 @@ import random                                       # Random Number Library
 import numpy as np                                  # Numpy Library (Statistical Functions)
 from PyQt6.QtWidgets import *                       # PyQt6 Library (GUI)
 from PyQt6.QtCore import *                          # PyQt6 Library (GUI)
-from pyqtgraph import PlotWidget, plot              # pip install pyqtgraph
+from pyqtgraph import PlotWidget, plot              # pip install pyqt6, pip install pyqtgraph
 from inputs.randomInputGen import randomInputGen    # Imports randomInputGen Class from inputs/randomInputGen.py
+
+simulate = True;
+
 randomInputGen()
+
+
 # Main Window Class
 class MainWindow(QMainWindow):
     def __init__(self):
