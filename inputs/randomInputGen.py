@@ -1,8 +1,9 @@
 # Plan to implement Qthreads to run randomInputGen() 
 # in parallell with the GUI. Basically, the GUI will
-# Be responsible for retrieving the procesurally Generated
+# Be responsible for retrieving the procedurally Generated
 # Random numbers, this class will run on a separate thread
 # and will be responsible for generating the random numbers
+# and writing them to the simulation file "data.txt"
 
 # Currently this is just an example QThread class.
 # This will be updated to include the random numbers
@@ -14,10 +15,11 @@
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
-import random
 
 import time
 import traceback, sys
+import random
+    
 
 
 class WorkerSignals(QObject):
@@ -79,7 +81,6 @@ class Worker(QRunnable):
 
         # Retrieve args/kwargs here; and fire processing using them
         try:
-            # Result should be a random number generated
             result = self.fn(*self.args, **self.kwargs)
         except:
             traceback.print_exc()
@@ -103,7 +104,7 @@ class MainWindow(QMainWindow):
         layout = QVBoxLayout()
 
         self.l = QLabel("Start")
-        b = QPushButton("Start Worker Thread")
+        b = QPushButton("DANGER!")
         b.pressed.connect(self.oh_no)
 
         layout.addWidget(self.l)
@@ -125,15 +126,21 @@ class MainWindow(QMainWindow):
         self.timer.start()
 
     def progress_fn(self, n):
-        randomNumber = random.randint(0, 100)
         print("%d%% done" % n)
 
     def execute_this_fn(self, progress_callback):
-        for n in range(0, 5):
-            time.sleep(1)
-            progress_callback.emit(n*100/4)
+        with open("data.txt", "w") as file:
+            for _ in range(100):  # Generating 5 random numbers
+                random_number = random.randint(0, 100)  
+                file.write(str(random_number) + "\n")
 
-        return "Done."
+                # Sleep To Simulate Sensor Delay
+                time.sleep(0.05)
+
+            # Report progress
+            progress_callback.emit((progress_callback * 100) / 4)
+            return "Done."
+        
 
     def print_output(self, s):
         print(s)
@@ -160,5 +167,3 @@ class MainWindow(QMainWindow):
 app = QApplication([])
 window = MainWindow()
 app.exec_()
-        
-        
