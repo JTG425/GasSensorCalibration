@@ -24,7 +24,7 @@ simulate = True
 # Main Window Class
 class MainWindow(QMainWindow):
     def __init__(self):
-        super().__init__()
+        super(MainWindow, self).__init__()
         self.setWindowTitle("Calibration GUI")
         # Window Size === Screen Size
         self.setFixedSize(QSize(1024, 600))
