@@ -1,0 +1,5 @@
+Have Each Calibration Output a Log to this file
+-> 3 Lines Per Calibration...
+-> Line 1: <Date>,<TimeToCompletion>,<MaxPPM>,<WarningsTriggered?> 
+-> Line 2: PPM Values separated by a space (For Graph Reconstruction)
+-> Line 3: Time (t) array (For Graph Reconstruction)
