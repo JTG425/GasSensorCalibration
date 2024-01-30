@@ -16,10 +16,12 @@ from PyQt5.QtCore import *                          # PyQt6 Library (GUI)
 from pyqtgraph import PlotWidget, plot              # pip install pyqt6, pip install pyqtgraph
 import faulthandler
 faulthandler.enable()
+from inputs.randomInputGen import randomInputGen     # Import Random Input Generator
 
 simulate = True
 
 
+randomInputGen()
 
 # Main Window Class
 class MainWindow(QMainWindow):
