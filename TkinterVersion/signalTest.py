@@ -92,7 +92,7 @@ class signalPlot():
 
         # Display the updated plot
         plt.draw()
-        plt.pause(0.1)  # Adjust the pause duration as needed
+        plt.pause(10)  # Adjust the pause duration as needed
 
         count += 1
     
