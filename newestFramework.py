@@ -1,4 +1,5 @@
 import sys
+import time
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QGridLayout, QVBoxLayout, QSpacerItem, QSizePolicy, QFrame, QLabel
 from PyQt6.QtCore import Qt,QAbstractAnimation, QPropertyAnimation, QPoint, QPropertyAnimation, QEasingCurve, QSequentialAnimationGroup
@@ -149,6 +150,7 @@ class HMIWindow(QWidget):
         self.abort_click_animation.start(QAbstractAnimation.DeletionPolicy.DeleteWhenStopped)
         
         
+          
     def toggleDisposal(self):
         # Disposal button click handler
         print("Disposal Clicked")
