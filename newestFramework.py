@@ -2,6 +2,8 @@ import sys
 from PyQt6.QtWidgets import QApplication, QGraphicsBlurEffect, QGraphicsBlurEffect, QGraphicsDropShadowEffect, QWidget, QPushButton, QGridLayout, QVBoxLayout, QSpacerItem, QSizePolicy, QFrame, QLabel
 from PyQt6.QtCore import Qt,QAbstractAnimation, QPropertyAnimation, QPoint, QPropertyAnimation, QEasingCurve, QSequentialAnimationGroup
 from PyQt6.QtGui import QColor, QPalette
+from eventLog import EventLog
+from graph import MakeGraph
 
 # Color Palette
 # --GraphBackground: #f9fafc;
@@ -31,51 +33,6 @@ eventLogBackground = "#7182a6"
         
 
 
-class EventLog(QWidget):
-    def __init__(self, parent=None):
-        super(EventLog, self).__init__(parent)
-        self.initEventLog()
-
-    def initEventLog(self):
-        self.layout = QVBoxLayout()
-        self.setLayout(self.layout)
-        self.setFixedSize(450, 600)
-        self.layout.setContentsMargins(0, 0, 0, 0)
-        
-        self.setAutoFillBackground(True)
-        self.setStyleSheet(
-            "background: transparent;"
-            "font-size: 20px; "
-            "padding-left: 0px; "
-            "padding-right: 10px; "
-            "padding-top: 75px; "
-            "padding-left: 15px;"
-            "padding-bottom: 10px; "
-            f"border: 1px solid {borders};"
-            f"color: {buttonText};"
-        )
-        
-        # Background frame for blur effect
-        self.bgFrame = QFrame(self)
-        self.bgFrame.setGeometry(0, 0, 450, 600)
-        self.bgFrame.setStyleSheet(
-            f"background: rgba(113, 130, 166, 0.95); "
-            f"border: 1px solid {borders};"
-        )
-
-        # # Apply blur effect to the background frame only (Ignore this)
-        # self.blur_effect = QGraphicsBlurEffect()
-        # self.blur_effect.setBlurRadius(25)
-        # self.bgFrame.setGraphicsEffect(self.blur_effect)
-        
-        # Example content in the sidebar
-        self.label = QLabel("Event Log", self)
-        self.label.setStyleSheet(
-            "background: transparent;"
-        )
-        self.label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-        
-        self.layout.addWidget(self.label)
 
 class HMIWindow(QWidget):
     def __init__(self):
@@ -83,9 +40,16 @@ class HMIWindow(QWidget):
         self.initializeUI()
         self.sidebar = EventLog(self)
         self.sidebar.move(-self.sidebar.width(), 0)
+        self.graph = MakeGraph(self)
+        
+        # Signal Connections
+        self.sidebar.eventTime.connect(self.graph.setEventTime)
+        self.sidebar.eventData.connect(self.graph.setEventData)
+        self.sidebar.eventDate.connect(self.graph.setEventDate)
+        self.sidebar.eventSelected.connect(self.onEventSelected)
+
 
     def initializeUI(self):
-
         self.setWindowTitle("Sensor Calibration")
         self.setGeometry(100, 100, 1024, 600)
 
@@ -114,10 +78,8 @@ class HMIWindow(QWidget):
         gridLayout.addWidget(self.startButton, 0, 3, 1, 2, Qt.AlignmentFlag.AlignRight)
         
         # Graph at row 1 and column 0 to 5
-        self.graph = QFrame()
-        self.graph.setFrameShape(QFrame.Shape.StyledPanel)
-        self.graph.setFrameShadow(QFrame.Shadow.Raised)
-        gridLayout.addWidget(self.graph, 1, 1, 6, 4)
+        # Graph Defined in graph.py
+        # gridLayout.addWidget(self.graph, 1, 1, 6, 4)
         
         # Clock at bottom left corner
         self.clock = QFrame()
@@ -136,12 +98,12 @@ class HMIWindow(QWidget):
         self.setPalette(palette)
         self.setAutoFillBackground(True)
 
-        # button styles
+        # styles
         self.eventButton.setStyleSheet(f"width: 100px; color: {buttonText}; font-size: 20px; background-color: {buttonColor}; color: {buttonText}; border: 1px solid {borders}; padding: 10px; border-radius: 5px;")
         self.abortButton.setStyleSheet(f"width: 100px; color: {buttonText}; font-size: 20px; background-color: {abortButtonColor}; color: {buttonText}; border: 1px solid {borders}; padding: 10px; border-radius: 5px;")
         self.startButton.setStyleSheet(f"width: 200px; color: {buttonText}; font-size: 20px; background-color: {buttonColor}; color: {buttonText}; border: 1px solid {borders}; padding: 10px; border-radius: 5px;")
         self.disposeButton.setStyleSheet(f"width: 200px; color: {buttonText}; font-size: 20px; background-color: {buttonColor}; color: {buttonText}; border: 1px solid {borders}; padding: 10px; border-radius: 5px;")
-        self.graph.setStyleSheet(f"background-color: {graphBackground}; border: 1px solid {borders}; border-radius: 5px;")
+        # self.graph.setStyleSheet(f"background-color: {graphBackground}; border: 1px solid {borders}; border-radius: 5px;")
         self.setLayout(gridLayout)
         
     def toggleAbort(self):
@@ -187,7 +149,6 @@ class HMIWindow(QWidget):
 
     def toggleEventLog(self):
         # Event button click handler
-        print("Event Log Shown")
         
         # Toggle The Button Text
         if self.eventButton.text() == "x":
@@ -230,6 +191,7 @@ class HMIWindow(QWidget):
     def onStartButtonClick(self):
         # Start button click handler
         print("Start button clicked!")
+        self.graph.showLiveGraph()
         
         # Click Animation for Start Button
         scale_down = QPropertyAnimation(self.startButton, b'size')
@@ -247,6 +209,10 @@ class HMIWindow(QWidget):
         self.start_click_animation.addAnimation(scale_up)
 
         self.start_click_animation.start(QAbstractAnimation.DeletionPolicy.DeleteWhenStopped)
+        
+    def onEventSelected(self, eventId):
+        # Call the method on MakeGraph to show the event log graph
+        self.graph.showEventLog()
 
 def main():
     app = QApplication(sys.argv)
