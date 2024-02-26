@@ -53,7 +53,7 @@ class EventLog(QWidget):
     # Signals
     eventSelected = pyqtSignal(int)
     eventTime = pyqtSignal(int)
-    eventData = pyqtSignal(list)
+    eventData = pyqtSignal(object)
     eventDate = pyqtSignal(str)
     
     
@@ -100,7 +100,7 @@ class EventLog(QWidget):
             )
             self.scrollLayout.addWidget(frames[event_key])
             frames[event_key].setText(events[event_key][0])
-            
+
             # Sends Signal To Main Window When Event is Clicked To Display Calibration Data
             frames[event_key].clicked.connect(lambda checked, eventId=i: self.eventSelected.emit(eventId))
             

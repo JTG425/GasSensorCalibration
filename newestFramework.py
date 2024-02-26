@@ -1,5 +1,5 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QGraphicsBlurEffect, QGraphicsBlurEffect, QGraphicsDropShadowEffect, QWidget, QPushButton, QGridLayout, QVBoxLayout, QSpacerItem, QSizePolicy, QFrame, QLabel
+from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QGridLayout, QVBoxLayout, QSpacerItem, QSizePolicy, QFrame, QLabel
 from PyQt6.QtCore import Qt,QAbstractAnimation, QPropertyAnimation, QPoint, QPropertyAnimation, QEasingCurve, QSequentialAnimationGroup
 from PyQt6.QtGui import QColor, QPalette
 from eventLog import EventLog
@@ -37,7 +37,15 @@ eventLogBackground = "#7182a6"
 class HMIWindow(QWidget):
     def __init__(self):
         super().__init__()
+        self.eventID = None
         self.initializeUI()
+
+
+    def initializeUI(self):
+
+        self.setWindowTitle("Sensor Calibration")
+        self.setGeometry(100, 100, 1024, 600)
+        gridLayout = QGridLayout(self)  # Initialize a QGridLayout
         self.sidebar = EventLog(self)
         self.sidebar.move(-self.sidebar.width(), 0)
         self.graph = MakeGraph(self)
@@ -49,11 +57,6 @@ class HMIWindow(QWidget):
         self.sidebar.eventSelected.connect(self.onEventSelected)
 
 
-    def initializeUI(self):
-        self.setWindowTitle("Sensor Calibration")
-        self.setGeometry(100, 100, 1024, 600)
-
-        gridLayout = QGridLayout()  # Initialize a QGridLayout
 
         # Event Log button at row 0, column 0
         self.eventButton = QPushButton("=")
@@ -79,7 +82,7 @@ class HMIWindow(QWidget):
         
         # Graph at row 1 and column 0 to 5
         # Graph Defined in graph.py
-        # gridLayout.addWidget(self.graph, 1, 1, 6, 4)
+        gridLayout.addWidget(self.graph, 1, 1, 6, 4)
         
         # Clock at bottom left corner
         self.clock = QFrame()
@@ -184,6 +187,7 @@ class HMIWindow(QWidget):
             self.animation.setEndValue(QPoint(-self.sidebar.width(), 0))
         
         self.animation.start()
+        self.sidebar.raise_()
         self.eventButton.raise_()  # Ensure the event button is always on top
         
 
@@ -212,6 +216,7 @@ class HMIWindow(QWidget):
         
     def onEventSelected(self, eventId):
         # Call the method on MakeGraph to show the event log graph
+        self.eventID = eventId
         self.graph.showEventLog()
 
 def main():
