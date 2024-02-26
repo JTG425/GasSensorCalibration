@@ -66,7 +66,7 @@ class EventLog(QWidget):
         self.setLayout(self.layout)
         screen = QApplication.primaryScreen().geometry()
         self.setFixedSize(screen.width() - 200, screen.height() - 100)
-        self.layout.setContentsMargins(20, 125, 10, 10)
+        self.layout.setContentsMargins(20, 150, 10, 10)
         self.setAutoFillBackground(True)
         
         # Create the scroll area
@@ -99,11 +99,12 @@ class EventLog(QWidget):
             events[event_key] = read_event('./logs/events.txt', i * 5 + offset)
             offset = offset + 1
             frames[event_key] = QPushButton(self.scrollContent)
-            frames[event_key].setFixedSize(350, 75)
+            # frames[event_key].setFixedSize(screen.width()-300, 150)
             frames[event_key].setStyleSheet(
                 f"background: {eventLogBackground};"
+                "height: 150px;"
+                f"width: {screen.width()-300};"
                 "font-size: 40px;"
-                "width: 100%;"
                 f"border: 1px solid {borders};"
             )
             self.scrollLayout.addWidget(frames[event_key])

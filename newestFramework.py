@@ -31,6 +31,9 @@ graphBackground = "#f9fafc"
 graphLine = "#526da4"
 borders = "#dddee2"
 eventLogBackground = "#7182a6"
+standbyColor = "#52a452"
+inProgressColor = "#a4a452"
+warningColor = "#a45252"
         
 
 
@@ -43,6 +46,7 @@ class HMIWindow(QWidget):
 
 
     def initializeUI(self):
+        self.isEventSelected = False
 
         self.setWindowTitle("Sensor Calibration")
         screen = QApplication.primaryScreen().geometry()
@@ -104,13 +108,29 @@ class HMIWindow(QWidget):
         self.abortButton.setStyleSheet(f"height: 100px; width: 100px; color: {buttonText}; font-size: 40px; background-color: {abortButtonColor}; color: {buttonText}; border: 1px solid {borders}; padding: 10px; border-radius: 5px;")
         self.startButton.setStyleSheet(f"height: 100px; width: 200px; color: {buttonText}; font-size: 40px; background-color: {buttonColor}; color: {buttonText}; border: 1px solid {borders}; padding: 10px; border-radius: 5px;")
         self.disposeButton.setStyleSheet(f"height: 100px; width: 200px; color: {buttonText}; font-size: 40px; background-color: {buttonColor}; color: {buttonText}; border: 1px solid {borders}; padding: 10px; border-radius: 5px;")
-        self.statusLabel.setStyleSheet(f"font-size: 40px; border: 1px solid {borders}; border-radius: 5px;")
+        self.statusLabel.setStyleSheet(f"font-size: 40px; border: 1px solid {borders}; border-radius: 5px; background-color: {standbyColor}; color: {buttonText};")
         # self.graph.setStyleSheet(f"background-color: {graphBackground}; border: 1px solid {borders}; border-radius: 5px;")
         self.setLayout(gridLayout)
+        
+    def handleStatusChange(self, status):
+        self.statusLabel.setText(f"Status: {status}")
+        if status == "Standby":
+            self.statusLabel.setStyleSheet(f"height: 100px; width: 100px; color: {buttonText}; font-size: 40px; background-color: {standbyColor}; color: {buttonText};")
+        elif status == "In Progress":
+            self.statusLabel.setStyleSheet(f"height: 100px; width: 100px; color: {buttonText}; font-size: 40px; background-color: {inProgressColor}; color: {buttonText};")
+        elif status == "Disposal In Progress":
+            self.statusLabel.setStyleSheet(f"height: 100px; width: 100px; color: {buttonText}; font-size: 40px; background-color: {inProgressColor}; color: {buttonText};")
+        elif status == "Aborting Calibration":
+            self.statusLabel.setStyleSheet(f"height: 100px; width: 100px; color: {buttonText}; font-size: 40px; background-color: {abortButtonColor}; color: {buttonText};")
+        elif status == "Showing Previous Event":
+            self.statusLabel.setStyleSheet(f"height: 100px; width: 100px; color: {buttonText}; font-size: 40px; background-color: {standbyColor}; color: {buttonText};")
+        else:
+            self.statusLabel.setStyleSheet(f"height: 100px; width: 100px; color: {buttonText}; font-size: 40px; background-color: {standbyColor}; color: {buttonText};")
         
     def toggleAbort(self):
         # Abort button click handler
         print("Abort Clicked")
+        self.handleStatusChange("Aborting Calibration")
         # Click Animation for Abort Button
         scale_down = QPropertyAnimation(self.abortButton, b'size')
         scale_down.setDuration(100)  # Duration in milliseconds
@@ -132,6 +152,7 @@ class HMIWindow(QWidget):
     def toggleDisposal(self):
         # Disposal button click handler
         print("Disposal Clicked")
+        self.handleStatusChange("Disposal In Progress")
         # Click Animation for Dispose Button
         scale_down = QPropertyAnimation(self.disposeButton, b'size')
         scale_down.setDuration(100)  # Duration in milliseconds
@@ -194,6 +215,7 @@ class HMIWindow(QWidget):
     def onStartButtonClick(self):
         # Start button click handler
         print("Start button clicked!")
+        self.handleStatusChange("In Progress")
         self.graph.showLiveGraph()
         
         # Click Animation for Start Button
@@ -215,7 +237,8 @@ class HMIWindow(QWidget):
         
     def onEventSelected(self, eventId):
         # Call the method on MakeGraph to show the event log graph
-        self.eventID = eventId
+        self.toggleEventLog()
+        self.handleStatusChange("Showing Previous Event")
         self.graph.showEventLog()
 
 def main():
