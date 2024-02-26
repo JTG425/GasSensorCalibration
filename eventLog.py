@@ -73,13 +73,14 @@ class EventLog(QWidget):
         self.scrollArea = QScrollArea(self)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.scroller = QScroller()
-        self.scroller.grabGesture(self.scrollArea, QScroller.GestureType.LeftMouseButtonGesture)
+        self.scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.scrollContent = QWidget(self.scrollArea)
         self.scrollLayout = QVBoxLayout(self.scrollContent)
         self.scrollArea.setWidget(self.scrollContent)
         self.layout.addWidget(self.scrollArea)
+    
+        # Enable Touch Scrolling on the Scroll Area
+        QScroller.grabGesture(self.scrollArea.viewport(), QScroller.ScrollerGestureType.LeftMouseButtonGesture)
         
         # Example content in the sidebar
         self.title = QLabel("Event Log", self.scrollContent)
