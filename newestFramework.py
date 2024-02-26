@@ -63,40 +63,36 @@ class HMIWindow(QWidget):
         # Event Log button at row 0, column 0
         self.eventButton = QPushButton("Menu")
         self.eventButton.clicked.connect(self.toggleEventLog)
-        gridLayout.addWidget(self.eventButton, 0, 0, Qt.AlignmentFlag.AlignTop)
+        gridLayout.addWidget(self.eventButton, 0, 0, 1, 2)
         
         # Abort at row 0, column 1
         self.abortButton = QPushButton("Abort")
         self.abortButton.clicked.connect(self.toggleAbort)
 
-        gridLayout.addWidget(self.abortButton, 0, 1, Qt.AlignmentFlag.AlignTop)
+        gridLayout.addWidget(self.abortButton, 0, 2, 1, 2)
         
         # Dispose at row 0, column 2 and 3
         self.disposeButton = QPushButton("Dispose")
         self.disposeButton.clicked.connect(self.toggleDisposal)     
-        gridLayout.addWidget(self.disposeButton, 0, 2, 1, 2, Qt.AlignmentFlag.AlignCenter)
+        gridLayout.addWidget(self.disposeButton, 0, 4, 1, 2)
         
 
         # Start button at row 0, column 4 and 5
         self.startButton = QPushButton("Start")
         self.startButton.clicked.connect(self.onStartButtonClick)
-        gridLayout.addWidget(self.startButton, 0, 3, 1, 2, Qt.AlignmentFlag.AlignRight)
+        gridLayout.addWidget(self.startButton, 0, 6, 1, 2)
+        
+        # Status Label at row 1, column 0 to 5
+        self.statusLabel = QLabel("Status: Standby")
+        self.statusLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        gridLayout.addWidget(self.statusLabel, 1, 1, 1, 6)
+        
         
         # Graph at row 1 and column 0 to 5
         # Graph Defined in graph.py
-        gridLayout.addWidget(self.graph, 1, 1, 6, 4)
+        gridLayout.addWidget(self.graph, 2, 0, 6, 8)
         
-        # Clock at bottom left corner
-        self.clock = QFrame()
-        self.clock.setFrameShape(QFrame.Shape.StyledPanel)
-        self.clock.setFrameShadow(QFrame.Shadow.Raised)
-        gridLayout.addWidget(self.clock, 6, 0, 1, 1)
-        
-
-        # Add spacer items to create the 5x7 grid structure
-        for row in range(1, 7):  # Add spacers for rows 1 to 6
-            for col in range(6):  # Each row will have 4 columns
-                gridLayout.addItem(QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding), row, col)
+    
 
         palette = self.palette()
         palette.setColor(QPalette.ColorRole.Window, QColor('#efeff1'))
@@ -104,10 +100,11 @@ class HMIWindow(QWidget):
         self.setAutoFillBackground(True)
 
         # styles
-        self.eventButton.setStyleSheet(f"width: 100px; color: {buttonText}; font-size: 20px; background-color: {buttonColor}; color: {buttonText}; border: 1px solid {borders}; padding: 10px; border-radius: 5px;")
-        self.abortButton.setStyleSheet(f"width: 100px; color: {buttonText}; font-size: 20px; background-color: {abortButtonColor}; color: {buttonText}; border: 1px solid {borders}; padding: 10px; border-radius: 5px;")
-        self.startButton.setStyleSheet(f"width: 200px; color: {buttonText}; font-size: 20px; background-color: {buttonColor}; color: {buttonText}; border: 1px solid {borders}; padding: 10px; border-radius: 5px;")
-        self.disposeButton.setStyleSheet(f"width: 200px; color: {buttonText}; font-size: 20px; background-color: {buttonColor}; color: {buttonText}; border: 1px solid {borders}; padding: 10px; border-radius: 5px;")
+        self.eventButton.setStyleSheet(f"height: 100px; width: 100px; color: {buttonText}; font-size: 40px; background-color: {buttonColor}; color: {buttonText}; border: 1px solid {borders}; padding: 10px; border-radius: 5px;")
+        self.abortButton.setStyleSheet(f"height: 100px; width: 100px; color: {buttonText}; font-size: 40px; background-color: {abortButtonColor}; color: {buttonText}; border: 1px solid {borders}; padding: 10px; border-radius: 5px;")
+        self.startButton.setStyleSheet(f"height: 100px; width: 200px; color: {buttonText}; font-size: 40px; background-color: {buttonColor}; color: {buttonText}; border: 1px solid {borders}; padding: 10px; border-radius: 5px;")
+        self.disposeButton.setStyleSheet(f"height: 100px; width: 200px; color: {buttonText}; font-size: 40px; background-color: {buttonColor}; color: {buttonText}; border: 1px solid {borders}; padding: 10px; border-radius: 5px;")
+        self.statusLabel.setStyleSheet(f"font-size: 40px; border: 1px solid {borders}; border-radius: 5px;")
         # self.graph.setStyleSheet(f"background-color: {graphBackground}; border: 1px solid {borders}; border-radius: 5px;")
         self.setLayout(gridLayout)
         
@@ -156,7 +153,7 @@ class HMIWindow(QWidget):
         # Event button click handler
         
         # Toggle The Button Text
-        if self.eventButton.text() == "Close":
+        if self.eventButton.text() == "Close Menu":
             self.eventButton.setText("Menu")
         else:
             self.eventButton.setText("Close Menu")

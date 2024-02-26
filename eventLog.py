@@ -1,5 +1,5 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, QScrollArea, QFrame
+from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, QScrollArea, QFrame, QScroller
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QColor, QPalette, QScreen
 from graph import MakeGraph
@@ -65,13 +65,17 @@ class EventLog(QWidget):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
         screen = QApplication.primaryScreen().geometry()
-        self.setFixedSize(450, screen.height() - 100)
-        self.layout.setContentsMargins(20, 75, 10, 10)
+        self.setFixedSize(screen.width() - 200, screen.height() - 100)
+        self.layout.setContentsMargins(20, 125, 10, 10)
         self.setAutoFillBackground(True)
         
         # Create the scroll area
         self.scrollArea = QScrollArea(self)
         self.scrollArea.setWidgetResizable(True)
+        self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.scroller = QScroller()
+        self.scroller.grabGesture(self.scrollArea, QScroller.GestureType.LeftMouseButtonGesture)
         self.scrollContent = QWidget(self.scrollArea)
         self.scrollLayout = QVBoxLayout(self.scrollContent)
         self.scrollArea.setWidget(self.scrollContent)
@@ -97,6 +101,8 @@ class EventLog(QWidget):
             frames[event_key].setFixedSize(350, 75)
             frames[event_key].setStyleSheet(
                 f"background: {eventLogBackground};"
+                "font-size: 40px;"
+                "width: 100%;"
                 f"border: 1px solid {borders};"
             )
             self.scrollLayout.addWidget(frames[event_key])
