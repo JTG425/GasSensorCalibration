@@ -1,7 +1,7 @@
 import sys
 from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, QScrollArea, QFrame
 from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QColor, QPalette
+from PyQt6.QtGui import QColor, QPalette, QScreen
 from graph import MakeGraph
 
 
@@ -64,7 +64,8 @@ class EventLog(QWidget):
     def initEventLog(self):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
-        self.setFixedSize(450, 600)
+        screen = QApplication.primaryScreen().geometry()
+        self.setFixedSize(450, screen.height() - 100)
         self.layout.setContentsMargins(20, 75, 10, 10)
         self.setAutoFillBackground(True)
         

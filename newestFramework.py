@@ -1,7 +1,8 @@
 import sys
+from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QGridLayout, QVBoxLayout, QSpacerItem, QSizePolicy, QFrame, QLabel
 from PyQt6.QtCore import Qt,QAbstractAnimation, QPropertyAnimation, QPoint, QPropertyAnimation, QEasingCurve, QSequentialAnimationGroup
-from PyQt6.QtGui import QColor, QPalette
+from PyQt6.QtGui import QColor, QPalette, QScreen
 from eventLog import EventLog
 from graph import MakeGraph
 
@@ -44,7 +45,8 @@ class HMIWindow(QWidget):
     def initializeUI(self):
 
         self.setWindowTitle("Sensor Calibration")
-        self.setGeometry(100, 100, 1024, 600)
+        screen = QApplication.primaryScreen().geometry()
+        self.setGeometry(0, 0, screen.width(), screen.height())
         gridLayout = QGridLayout(self)  # Initialize a QGridLayout
         self.sidebar = EventLog(self)
         self.sidebar.move(-self.sidebar.width(), 0)
@@ -59,7 +61,7 @@ class HMIWindow(QWidget):
 
 
         # Event Log button at row 0, column 0
-        self.eventButton = QPushButton("=")
+        self.eventButton = QPushButton("Menu")
         self.eventButton.clicked.connect(self.toggleEventLog)
         gridLayout.addWidget(self.eventButton, 0, 0, Qt.AlignmentFlag.AlignTop)
         
@@ -154,10 +156,10 @@ class HMIWindow(QWidget):
         # Event button click handler
         
         # Toggle The Button Text
-        if self.eventButton.text() == "x":
-            self.eventButton.setText("=")
+        if self.eventButton.text() == "Close":
+            self.eventButton.setText("Menu")
         else:
-            self.eventButton.setText("x")
+            self.eventButton.setText("Close Menu")
         
         # Click Animation for Event Log Button
         scale_down = QPropertyAnimation(self.eventButton, b'size')
