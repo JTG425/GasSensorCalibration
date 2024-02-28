@@ -1,9 +1,9 @@
 import sys
 import time
-from PyQt6 import QtCore, QtGui, QtWidgets
-from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QGridLayout, QVBoxLayout, QSpacerItem, QSizePolicy, QFrame, QLabel
-from PyQt6.QtCore import Qt,QAbstractAnimation, QPropertyAnimation, QPoint, QPointF, QPropertyAnimation, QEasingCurve, QSequentialAnimationGroup
-from PyQt6.QtGui import QColor, QPalette, QScreen, QLinearGradient, QBrush
+from PyQt6 import *
+from PyQt6.QtWidgets import *
+from PyQt6.QtCore import *
+from PyQt6.QtGui import *
 from eventLog import EventLog
 from graph import MakeGraph
 
@@ -56,12 +56,14 @@ class HMIWindow(QWidget):
     def initializeUI(self):
         self.isEventSelected = False
 
-        self.setWindowTitle("Sensor Calibration")
+        self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
+        self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         screen = QApplication.primaryScreen().geometry()
-        self.setGeometry(0, 0, screen.width(), screen.height())
+        self.setGeometry(0, 0, 1024,600)
+        self.showFullScreen()
         gridLayout = QGridLayout(self)  # Initialize a QGridLayout
         self.sidebar = EventLog(self)
-        self.sidebar.move(-self.sidebar.width(), 0)
+        self.sidebar.move(0, 0)
         self.graph = MakeGraph(self)
         self.setStyleSheet(
             f"background: {windowBackground};"
