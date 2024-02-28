@@ -56,14 +56,14 @@ class HMIWindow(QWidget):
     def initializeUI(self):
         self.isEventSelected = False
 
-        self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
-        self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
+        #self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
+        #self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         screen = QApplication.primaryScreen().geometry()
-        self.setGeometry(0, 0, 1024,600)
-        self.showFullScreen()
+        self.setGeometry(0, 0, screen.width(),screen.height())
+        # self.showFullScreen()
         gridLayout = QGridLayout(self)  # Initialize a QGridLayout
         self.sidebar = EventLog(self)
-        self.sidebar.move(0, 0)
+        self.sidebar.move(QPoint(-self.sidebar.width(), 0))
         self.graph = MakeGraph(self)
         self.setStyleSheet(
             f"background: {windowBackground};"
@@ -226,7 +226,7 @@ class HMIWindow(QWidget):
         self.animation.setDuration(500)  # Animation duration in milliseconds
 
         if self.sidebar.x() < 0:  # If sidebar is off-screen, slide it into view
-            self.animation.setEndValue(QPoint(0, 0))
+            self.animation.setEndValue(QPoint(0,0))
         else:  # If sidebar is in view, slide it out of view
             self.animation.setEndValue(QPoint(-self.sidebar.width(), 0))
         

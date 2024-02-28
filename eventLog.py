@@ -65,9 +65,10 @@ class EventLog(QWidget):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
         screen = QApplication.primaryScreen().geometry()
-        self.setFixedSize(screen.width() - 300, screen.height() - 100)
+        self.setFixedSize(screen.width()-300, screen.height() - 100)
         self.layout.setContentsMargins(20, 150, 10, 10)
         self.setAutoFillBackground(True)
+        
         
         # Create the scroll area
         self.scrollArea = QScrollArea(self)
@@ -79,6 +80,7 @@ class EventLog(QWidget):
         self.scrollArea.setWidget(self.scrollContent)
         self.layout.addWidget(self.scrollArea)
     
+        self.raise_()
         # Enable Touch Scrolling on the Scroll Area
         QScroller.grabGesture(self.scrollArea.viewport(), QScroller.ScrollerGestureType.LeftMouseButtonGesture)
         
