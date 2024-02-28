@@ -65,7 +65,7 @@ class EventLog(QWidget):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
         screen = QApplication.primaryScreen().geometry()
-        self.setFixedSize(screen.width() - 200, screen.height() - 100)
+        self.setFixedSize(screen.width() - 300, screen.height() - 100)
         self.layout.setContentsMargins(20, 150, 10, 10)
         self.setAutoFillBackground(True)
         
@@ -103,7 +103,7 @@ class EventLog(QWidget):
             frames[event_key].setStyleSheet(
                 f"background: {eventLogBackground};"
                 "height: 150px;"
-                f"width: {screen.width()-300};"
+                f"width: {screen.width()-600};"
                 "font-size: 40px;"
                 f"border: 1px solid {borders};"
             )

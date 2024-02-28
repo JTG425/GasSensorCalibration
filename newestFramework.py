@@ -2,39 +2,46 @@ import sys
 import time
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QGridLayout, QVBoxLayout, QSpacerItem, QSizePolicy, QFrame, QLabel
-from PyQt6.QtCore import Qt,QAbstractAnimation, QPropertyAnimation, QPoint, QPropertyAnimation, QEasingCurve, QSequentialAnimationGroup
-from PyQt6.QtGui import QColor, QPalette, QScreen
+from PyQt6.QtCore import Qt,QAbstractAnimation, QPropertyAnimation, QPoint, QPointF, QPropertyAnimation, QEasingCurve, QSequentialAnimationGroup
+from PyQt6.QtGui import QColor, QPalette, QScreen, QLinearGradient, QBrush
 from eventLog import EventLog
 from graph import MakeGraph
 
 # Color Palette
-# --GraphBackground: #f9fafc;
-# --GraphLine And Button Color: #526da4;
-# --EventLog: #7182a6; 
-# --GraphAxes: #d7deeb;
+# --primary: #063e78; GraphLine, EventLogBackgroud
+# --primary-content: #84bdf9; Text Color
+# --primary-dark: #042547; For Gradients
+# --primary-light: #0857a9; For Gradients
 
-# --background: #efeff1;
-# --foreground: #fbfbfb;
-# --border: #dddee2;
+# --background: #18191b; Window Background
+# --foreground: #232629; Graph Background
+# --border: #3b4045; Borders
 
-# --text: #232529;
-# --text-light: #5e636e;
-# --text-lighter: #848995;
+# --copy: #fbfbfb; Text Color (Main Window Above Background, EX: Clock)
+# --copy-light: #d6d9dc; Text Color (Light)
+# --copy-lighter: #9fa6ac;  Text Color (Lighter)
 
-# --standby: #52a452;
-# --inprogress: #a4a452;
-# --warning: #a45252;
+# --standby: #067806;
+# --inProgress: #787806;
+# --abort: #780606;
+# --standby-text: #84f984;
+# --warning-text: #f9f984;
+# --error-text: #f98484;
 
-buttonColor = "#526da4"
-buttonText = "#232529"
-abortButtonColor = "#a61217"
+windowBackground = "#18191b"
+buttonColor = "#0857a9"
+m_s_buttonText = "#84bdf9"
+warningText = "#f9f984"
+standbyText = "#84f984"
+errorText = "#f98484"
+abortButtonColor = "#a30309"
 graphBackground = "#f9fafc"
-graphLine = "#526da4"
-borders = "#dddee2"
-eventLogBackground = "#7182a6"
-standbyColor = "#52a452"
-inProgressColor = "#a4a452"
-warningColor = "#a45252"
+graphLine = "#063e78"
+borders = "#3b4045"
+eventLogBackground = "#063e78"
+standbyColor = "#067806"
+inProgressColor = "#787806"
+warningColor = "#780606"
         
 
 
@@ -56,14 +63,27 @@ class HMIWindow(QWidget):
         self.sidebar = EventLog(self)
         self.sidebar.move(-self.sidebar.width(), 0)
         self.graph = MakeGraph(self)
+        self.setStyleSheet(
+            f"background: {windowBackground};"
+        )
+        
+        
+        # Linear Gradient Setup
+        # self.setStyleSheet(
+        #     "background-color: qlineargradient("
+        #     "x1: 0, y1:0," 
+        #     "x2: 1, y2: 1," 
+        #     f"stop: 0 {windowBackground1}," 
+        #     f"stop: 1 {windowBackground2});"
+        #     )
         
         # Signal Connections
         self.sidebar.eventTime.connect(self.graph.setEventTime)
         self.sidebar.eventData.connect(self.graph.setEventData)
         self.sidebar.eventDate.connect(self.graph.setEventDate)
         self.sidebar.eventSelected.connect(self.onEventSelected)
-
-
+    
+        
 
         # Event Log button at row 0, column 0
         self.eventButton = QPushButton("Menu")
@@ -95,7 +115,7 @@ class HMIWindow(QWidget):
         
         # Graph at row 1 and column 0 to 5
         # Graph Defined in graph.py
-        gridLayout.addWidget(self.graph, 2, 0, 6, 8)
+        gridLayout.addWidget(self.graph, 2, 1, 6, 6)
         
     
 
@@ -105,28 +125,28 @@ class HMIWindow(QWidget):
         self.setAutoFillBackground(True)
 
         # styles
-        self.eventButton.setStyleSheet(f"height: 100px; width: 100px; color: {buttonText}; font-size: 40px; background-color: {buttonColor}; color: {buttonText}; border: 1px solid {borders}; padding: 10px; border-radius: 5px;")
-        self.abortButton.setStyleSheet(f"height: 100px; width: 100px; color: {buttonText}; font-size: 40px; background-color: {abortButtonColor}; color: {buttonText}; border: 1px solid {borders}; padding: 10px; border-radius: 5px;")
-        self.startButton.setStyleSheet(f"height: 100px; width: 200px; color: {buttonText}; font-size: 40px; background-color: {buttonColor}; color: {buttonText}; border: 1px solid {borders}; padding: 10px; border-radius: 5px;")
-        self.disposeButton.setStyleSheet(f"height: 100px; width: 200px; color: {buttonText}; font-size: 40px; background-color: {buttonColor}; color: {buttonText}; border: 1px solid {borders}; padding: 10px; border-radius: 5px;")
-        self.statusLabel.setStyleSheet(f"font-size: 40px; border: 1px solid {borders}; border-radius: 5px; background-color: {standbyColor}; color: {buttonText};")
+        self.eventButton.setStyleSheet(f"height: 100px; width: 100px; color: {m_s_buttonText}; font-size: 40px; background-color: {buttonColor}; color: {m_s_buttonText}; border: 1px solid {borders}; padding: 10px; border-radius: 5px;")
+        self.abortButton.setStyleSheet(f"height: 100px; width: 100px; color: {m_s_buttonText}; font-size: 40px; background-color: {abortButtonColor}; color: {m_s_buttonText}; border: 1px solid {borders}; padding: 10px; border-radius: 5px;")
+        self.startButton.setStyleSheet(f"height: 100px; width: 200px; color: {m_s_buttonText}; font-size: 40px; background-color: {buttonColor}; color: {m_s_buttonText}; border: 1px solid {borders}; padding: 10px; border-radius: 5px;")
+        self.disposeButton.setStyleSheet(f"height: 100px; width: 200px; color: {m_s_buttonText}; font-size: 40px; background-color: {buttonColor}; color: {m_s_buttonText}; border: 1px solid {borders}; padding: 10px; border-radius: 5px;")
+        self.statusLabel.setStyleSheet(f"height: 100px; font-size: 40px; border: 1px solid {borders}; border-radius: 5px; background-color: {standbyColor}; color: {standbyText};")
         # self.graph.setStyleSheet(f"background-color: {graphBackground}; border: 1px solid {borders}; border-radius: 5px;")
         self.setLayout(gridLayout)
         
     def handleStatusChange(self, status):
         self.statusLabel.setText(f"Status: {status}")
         if status == "Standby":
-            self.statusLabel.setStyleSheet(f"height: 100px; width: 100px; color: {buttonText}; font-size: 40px; background-color: {standbyColor}; color: {buttonText};")
+            self.statusLabel.setStyleSheet(f"height: 100px; width: 100px; font-size: 40px; background-color: {standbyColor}; color: {standbyText};")
         elif status == "In Progress":
-            self.statusLabel.setStyleSheet(f"height: 100px; width: 100px; color: {buttonText}; font-size: 40px; background-color: {inProgressColor}; color: {buttonText};")
+            self.statusLabel.setStyleSheet(f"height: 100px; width: 100px; font-size: 40px; background-color: {inProgressColor}; color: {warningText};")
         elif status == "Disposal In Progress":
-            self.statusLabel.setStyleSheet(f"height: 100px; width: 100px; color: {buttonText}; font-size: 40px; background-color: {inProgressColor}; color: {buttonText};")
+            self.statusLabel.setStyleSheet(f"height: 100px; width: 100px; font-size: 40px; background-color: {inProgressColor}; color: {warningText};")
         elif status == "Aborting Calibration":
-            self.statusLabel.setStyleSheet(f"height: 100px; width: 100px; color: {buttonText}; font-size: 40px; background-color: {abortButtonColor}; color: {buttonText};")
+            self.statusLabel.setStyleSheet(f"height: 100px; width: 100px; font-size: 40px; background-color: {abortButtonColor}; color: {warningText};")
         elif status == "Showing Previous Event":
-            self.statusLabel.setStyleSheet(f"height: 100px; width: 100px; color: {buttonText}; font-size: 40px; background-color: {standbyColor}; color: {buttonText};")
+            self.statusLabel.setStyleSheet(f"height: 100px; width: 100px; font-size: 40px; background-color: {standbyColor}; color: {m_s_buttonText};")
         else:
-            self.statusLabel.setStyleSheet(f"height: 100px; width: 100px; color: {buttonText}; font-size: 40px; background-color: {standbyColor}; color: {buttonText};")
+            self.statusLabel.setStyleSheet(f"height: 100px; width: 100px; font-size: 40px; background-color: {standbyColor}; color: {m_s_buttonText};")
         
     def toggleAbort(self):
         # Abort button click handler
@@ -218,7 +238,7 @@ class HMIWindow(QWidget):
         # Start button click handler
         print("Start button clicked!")
         self.handleStatusChange("In Progress")
-        self.graph.showLiveGraph()
+        self.graph.tempLiveData()
         
         # Click Animation for Start Button
         scale_down = QPropertyAnimation(self.startButton, b'size')
