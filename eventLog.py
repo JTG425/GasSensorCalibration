@@ -71,7 +71,7 @@ class EventLog(QWidget):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
         screen = QApplication.primaryScreen().geometry()
-        self.setFixedSize(600, 600)
+        self.setFixedSize(screen.width()-500, screen.height())
         self.setAutoFillBackground(True)
         
         
@@ -81,13 +81,14 @@ class EventLog(QWidget):
         
         # Hide Scroll Bars
         self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.scrollContent = QWidget(self.scrollArea)
         self.scrollLayout = QVBoxLayout(self.scrollContent)
         self.scrollArea.setWidget(self.scrollContent)
         self.layout.addWidget(self.scrollArea)
     
-        self.scrollContent.setContentsMargins(0,100,0,0)
+        self.scrollContent.setContentsMargins(10,100,10,10)
+        self.scrollArea.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignHCenter)
         self.raise_()
         # Enable Touch Scrolling on the Scroll Area
         QScroller.grabGesture(self.scrollArea.viewport(), QScroller.ScrollerGestureType.TouchGesture)
@@ -110,11 +111,11 @@ class EventLog(QWidget):
             events[event_key] = read_event('./logs/events.txt', i * 5 + offset)
             offset = offset + 1
             frames[event_key] = QPushButton(self.scrollContent)
-            frames[event_key].setFixedSize(300, 150)
+            #frames[event_key].setFixedSize(screen.width()-600, 150)
             frames[event_key].setStyleSheet(
                 f"background: {eventLogBackground};"
-                "height: 150px;"
-                "font-size: 40px;"
+                f"color: {m_s_buttonText};"
+                "height: 100px;"
                 f"border: 1px solid {borders};"
             )
             self.scrollLayout.addWidget(frames[event_key])

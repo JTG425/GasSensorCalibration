@@ -47,6 +47,7 @@ warningColor = "#780606"
 
 
 class HMIWindow(QWidget):
+    sideBarShown = False;
     def __init__(self):
         super().__init__()
         self.eventID = None
@@ -56,13 +57,13 @@ class HMIWindow(QWidget):
     def initializeUI(self):
         self.isEventSelected = False
 
-        #self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
+        self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
         #self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         screen = QApplication.primaryScreen().geometry()
-        self.setGeometry(0, 0, 1024, 600)
+        self.setGeometry(0, 0, screen.width(), screen.height())
         # self.showFullScreen()
         gridLayout = QGridLayout(self)  # Initialize a QGridLayout
-        gridLayout.setContentsMargins(10, 10, 10, 10)
+        gridLayout.setContentsMargins(10, 50, 10, 10)
         self.sidebar = EventLog(self)
         self.sidebar.move(QPoint(-self.sidebar.width(), 0))
         self.graph = MakeGraph(self)
@@ -250,9 +251,10 @@ class HMIWindow(QWidget):
 
     def toggleEventLog(self):
         # Event button click handler
+        self.sideBarShown = not self.sideBarShown
         
         # Toggle The Button Text
-        if self.eventButton.text() == "☰":
+        if self.sideBarShown:
             self.eventButton.setText("X")
         else:
             self.eventButton.setText("☰")
@@ -261,8 +263,8 @@ class HMIWindow(QWidget):
         self.animation = QPropertyAnimation(self.sidebar, b"pos")
         self.animation.setDuration(500)  # Animation duration in milliseconds
 
-        if self.sidebar.x() < 0:  # If sidebar is off-screen, slide it into view
-            self.animation.setEndValue(QPoint(0,0))
+        if self.sideBarShown:  # If sidebar is off-screen, slide it into view
+            self.animation.setEndValue(QPoint(-10,0))
         else:  # If sidebar is in view, slide it out of view
             self.animation.setEndValue(QPoint(-self.sidebar.width(), 0))
         
