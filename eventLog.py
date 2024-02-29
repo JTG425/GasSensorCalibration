@@ -23,14 +23,20 @@ from graph import MakeGraph
 # --inprogress: #a4a452;
 # --warning: #a45252;
 
-buttonColor = "#526da4"
-buttonText = "#232529"
-abortButtonColor = "#a61217"
-graphBackground = "#f9fafc"
-graphLine = "#526da4"
-borders = "#dddee2"
-eventLogBackground = "#7182a6"
-mainBackground = "#efeff1"
+windowBackground = "#18191b"
+buttonColor = "#0857a9"
+m_s_buttonText = "#84bdf9"
+warningText = "#f9f984"
+standbyText = "#84f984"
+errorText = "#f98484"
+abortButtonColor = "#a30309"
+graphBackground = "#232629"
+graphLine = "#063e78"
+borders = "#3b4045"
+eventLogBackground = "#063e78"
+standbyColor = "#067806"
+inProgressColor = "#787806"
+warningColor = "#780606"
 
 def read_event_count(filename, line_number):
     with open(filename, 'r') as file:
@@ -65,14 +71,15 @@ class EventLog(QWidget):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
         screen = QApplication.primaryScreen().geometry()
-        self.setFixedSize(300, 650)
-        self.layout.setContentsMargins(20, 150, 10, 10)
+        self.setFixedSize(600, 600)
         self.setAutoFillBackground(True)
         
         
         # Create the scroll area
         self.scrollArea = QScrollArea(self)
         self.scrollArea.setWidgetResizable(True)
+        
+        # Hide Scroll Bars
         self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.scrollContent = QWidget(self.scrollArea)
@@ -80,14 +87,16 @@ class EventLog(QWidget):
         self.scrollArea.setWidget(self.scrollContent)
         self.layout.addWidget(self.scrollArea)
     
+        self.scrollContent.setContentsMargins(0,100,0,0)
         self.raise_()
         # Enable Touch Scrolling on the Scroll Area
-        QScroller.grabGesture(self.scrollArea.viewport(), QScroller.ScrollerGestureType.LeftMouseButtonGesture)
+        QScroller.grabGesture(self.scrollArea.viewport(), QScroller.ScrollerGestureType.TouchGesture)
         
         # Example content in the sidebar
         self.title = QLabel("Event Log", self.scrollContent)
         self.title.setStyleSheet(
             "font-size: 30px;"
+            "color: white;"
         )
         self.title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
         self.scrollLayout.addWidget(self.title)
@@ -101,11 +110,10 @@ class EventLog(QWidget):
             events[event_key] = read_event('./logs/events.txt', i * 5 + offset)
             offset = offset + 1
             frames[event_key] = QPushButton(self.scrollContent)
-            frames[event_key].setFixedSize(100, 150)
+            frames[event_key].setFixedSize(300, 150)
             frames[event_key].setStyleSheet(
                 f"background: {eventLogBackground};"
                 "height: 150px;"
-                f"width: {screen.width()-600};"
                 "font-size: 40px;"
                 f"border: 1px solid {borders};"
             )

@@ -36,20 +36,30 @@ class MakeGraph(QWidget):
         )
     
         # Create a layout for the graphFrame
-        graphFrameLayout = QVBoxLayout(self.graphFrame)  
-        self.graphFrame.setLayout(graphFrameLayout)  # Set the layout for graphFrame
+        self.graphFrameLayout = QVBoxLayout(self.graphFrame)  
+        self.graphFrame.setLayout(self.graphFrameLayout)  # Set the layout for graphFrame
 
         self.graphWidget = pg.PlotWidget()
-        graphFrameLayout.addWidget(self.graphWidget)  # Add the graphWidget to the graphFrame's layout
+        self.graphFrameLayout.addWidget(self.graphWidget)  # Add the graphWidget to the graphFrame's layout
+        self.graphFrameLayout.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Align the graphWidget to the center
 
         # Now the graphWidget is within the graphFrame, you can set up the graphWidget as before
         self.graphWidget.setBackground(self.graphBackground)
-        self.graphWidget.setTitle('Concentration In PPM', color='k')
-        self.graphWidget.setLabel('left', 'PPM')
-        self.graphWidget.setLabel('bottom', 'Time')
-        self.graphWidget.getPlotItem().getAxis('bottom').setPen(self.graphLine)
-        self.graphWidget.getPlotItem().getAxis('left').setPen(self.graphLine)
+        self.graphWidget.setFixedWidth(1024)
+        self.graphWidget.showGrid(x=True, y=True)
+        self.graphWidget.setTitle('<span style="font-size: 24pt">Concentration In PPM</span>', color='w')
+        
+        # Increase the font size for axis labels
+        axisFont = QFont()
+        axisFont.setPixelSize(14)  # Set the desired font size
+        self.graphWidget.getPlotItem().getAxis('left').setTickFont(axisFont)
+        self.graphWidget.getPlotItem().getAxis('bottom').setTickFont(axisFont)
+        self.graphWidget.setLabel('left', 'PPM', **{'font-size': '24pt'},  **{'color': 'w'})
+        self.graphWidget.setLabel('bottom', 'Time (s)', **{'font-size': '24pt'},  **{'color': 'w'})
 
+        # Adjusting bottom margin to ensure the bottom axis title is not cut off
+        self.graphWidget.getPlotItem().layout.setContentsMargins(0, 0, 0, 25)  # Left, Top, Right, Bottom margins
+        
         layout.addWidget(self.graphFrame)  # Add the graphFrame to the main layout
 
         self.tempLiveData()
@@ -73,7 +83,7 @@ class MakeGraph(QWidget):
             if self.counter < len(self.time):
                 time_keys = list(self.time.keys())[:self.counter + 1]
                 data_values = [self.data[key] for key in time_keys]
-                self.graphWidget.plot(time_keys, data_values, pen=pg.mkPen(self.graphLine, width=2))
+                self.graphWidget.plot(time_keys, data_values, pen=pg.mkPen(self.graphLine, width=8))
                 self.counter += 1
             else:
                 self.timer.stop()  # Stop the timer if all points are plotted
@@ -95,7 +105,7 @@ class MakeGraph(QWidget):
         self.graphWidget.clear()
         self.counter = 0
         self.eventCounter = 0
-        self.graphWidget.setTitle(f'Calibration Performed On {self.eventDateValue}')
+        self.graphWidget.setTitle(f'<span style="font-size: 24pt">Calibration Performed on {self.eventDateValue}</span>', color='w')
         
         if self.eventTimeValue is None or self.eventDataValues == [] or self.eventDateValue is None:
             print("No data to show")
@@ -113,7 +123,7 @@ class MakeGraph(QWidget):
         if self.eventCounter < len(self.eventTime):
             time_keys2 = list(self.eventTime.keys())[:self.eventCounter + 1]
             data_values2 = [self.eventData[key] for key in time_keys2]
-            self.graphWidget.plot(time_keys2, data_values2, pen=pg.mkPen(self.graphLine, width=2))
+            self.graphWidget.plot(time_keys2, data_values2, pen=pg.mkPen(self.graphLine, width=8))
             self.eventCounter += 1
         else:
             self.eventTimer.stop()  # Stop the timer if all points are plotted

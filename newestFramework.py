@@ -62,6 +62,7 @@ class HMIWindow(QWidget):
         self.setGeometry(0, 0, 1024, 600)
         # self.showFullScreen()
         gridLayout = QGridLayout(self)  # Initialize a QGridLayout
+        gridLayout.setContentsMargins(10, 10, 10, 10)
         self.sidebar = EventLog(self)
         self.sidebar.move(QPoint(-self.sidebar.width(), 0))
         self.graph = MakeGraph(self)
@@ -87,37 +88,40 @@ class HMIWindow(QWidget):
     
         
 
-        # Event Log button at row 0, column 0
-        self.eventButton = QPushButton("Menu")
+        # Event Log button at row 0, column 0, spanning 2x2
+        self.eventButton = QPushButton("☰")
+        self.eventButton.setFixedSize(75, 75)
         self.eventButton.clicked.connect(self.toggleEventLog)
-        gridLayout.addWidget(self.eventButton, 0, 0, 1, 2)
+        gridLayout.addWidget(self.eventButton, 0, 0, 1, 1)
         
-        # Abort at row 0, column 1
+        # Abort at row 0, column 1, spanning 2x4
         self.abortButton = QPushButton("Abort")
+        self.abortButton.setFixedSize(125, 75)
         self.abortButton.clicked.connect(self.toggleAbort)
-
-        gridLayout.addWidget(self.abortButton, 0, 2, 1, 2)
+        gridLayout.addWidget(self.abortButton, 0, 1, 1, 1)
         
-        # Dispose at row 0, column 2 and 3
+        # Dispose at row 0, column 6
         self.disposeButton = QPushButton("Dispose")
+        self.disposeButton.setFixedSize(225, 75)
         self.disposeButton.clicked.connect(self.toggleDisposal)     
-        gridLayout.addWidget(self.disposeButton, 0, 4, 1, 2)
+        gridLayout.addWidget(self.disposeButton, 0, 6, 1, 1)
         
 
-        # Start button at row 0, column 4 and 5
+        # Start button at row 0, column 7
         self.startButton = QPushButton("Start")
+        self.startButton.setFixedSize(225, 75)
         self.startButton.clicked.connect(self.onStartButtonClick)
-        gridLayout.addWidget(self.startButton, 0, 6, 1, 2)
+        gridLayout.addWidget(self.startButton, 0, 7, 1, 1)
         
         # Status Label at row 1, column 0 to 5
         self.statusLabel = QLabel("Status: Standby")
         self.statusLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        gridLayout.addWidget(self.statusLabel, 1, 1, 1, 6)
+        gridLayout.addWidget(self.statusLabel, 1, 0, 1, 8)
         
         
-        # Graph at row 1 and column 0 to 5
+        # Graph at row 2 and column 0 to 5
         # Graph Defined in graph.py
-        gridLayout.addWidget(self.graph, 2, 1, 6, 6)
+        gridLayout.addWidget(self.graph, 2, 0, 6, 8)
         
     
 
@@ -127,49 +131,114 @@ class HMIWindow(QWidget):
         self.setAutoFillBackground(True)
 
         # styles
-        self.eventButton.setStyleSheet(f"height: 100px; width: 100px; color: {m_s_buttonText}; font-size: 40px; background-color: {buttonColor}; color: {m_s_buttonText}; border: 1px solid {borders}; padding: 10px; border-radius: 5px;")
-        self.abortButton.setStyleSheet(f"height: 100px; width: 100px; color: {m_s_buttonText}; font-size: 40px; background-color: {abortButtonColor}; color: {m_s_buttonText}; border: 1px solid {borders}; padding: 10px; border-radius: 5px;")
-        self.startButton.setStyleSheet(f"height: 100px; width: 200px; color: {m_s_buttonText}; font-size: 40px; background-color: {buttonColor}; color: {m_s_buttonText}; border: 1px solid {borders}; padding: 10px; border-radius: 5px;")
-        self.disposeButton.setStyleSheet(f"height: 100px; width: 200px; color: {m_s_buttonText}; font-size: 40px; background-color: {buttonColor}; color: {m_s_buttonText}; border: 1px solid {borders}; padding: 10px; border-radius: 5px;")
-        self.statusLabel.setStyleSheet(f"height: 100px; font-size: 40px; border: 1px solid {borders}; border-radius: 5px; background-color: {standbyColor}; color: {standbyText};")
-        # self.graph.setStyleSheet(f"background-color: {graphBackground}; border: 1px solid {borders}; border-radius: 5px;")
+        self.eventButton.setStyleSheet(
+            f"color: {m_s_buttonText};" 
+            f"background-color: {buttonColor};" 
+            f"color: {m_s_buttonText};" 
+            f"border: 1px solid {borders};"
+            "font-size: 24px;"
+            "padding: 10px;"  
+            f"border-radius: 5px;"
+        )
+        self.abortButton.setStyleSheet(
+            f"color: {m_s_buttonText};" 
+            f"background-color: {abortButtonColor};" 
+            f"color: {m_s_buttonText};" 
+            f"border: 1px solid {borders};"
+            "font-size: 24px;"
+            "padding: 10px;"  
+            "border-radius: 5px;"
+        )
+        self.startButton.setStyleSheet(
+            f"color: {m_s_buttonText};" 
+            f"background-color: {buttonColor};" 
+            f"color: {m_s_buttonText};" 
+            f"border: 1px solid {borders};"
+            "font-size: 24px;"
+            "padding: 10px;"  
+            "border-radius: 5px;"
+        )
+        self.disposeButton.setStyleSheet(
+            f"color: {m_s_buttonText};" 
+            f"background-color: {buttonColor};" 
+            f"color: {m_s_buttonText};" 
+            f"border: 1px solid {borders};" 
+            "font-size: 24px;"
+            "padding: 10px;" 
+            "border-radius: 5px;"
+        )
+        self.statusLabel.setStyleSheet(
+            f"font-size: 40px;" 
+            f"border: 1px solid {borders};" 
+            f"border-radius: 5px;" 
+            f"background-color: {standbyColor};"
+            "padding: 10px;" 
+            "color: {standbyText};"
+        )
+
         self.setLayout(gridLayout)
         
     def handleStatusChange(self, status):
         self.statusLabel.setText(f"Status: {status}")
         if status == "Standby":
-            self.statusLabel.setStyleSheet(f"height: 100px; width: 100px; font-size: 40px; background-color: {standbyColor}; color: {standbyText};")
+            self.statusLabel.setStyleSheet(
+                f"font-size: 40px;" 
+                f"border: 1px solid {borders};" 
+                f"border-radius: 5px;" 
+                f"background-color: {standbyColor};"
+                "padding: 10px;" 
+                "color: {standbyText};"
+            )
         elif status == "In Progress":
-            self.statusLabel.setStyleSheet(f"height: 100px; width: 100px; font-size: 40px; background-color: {inProgressColor}; color: {warningText};")
+            self.statusLabel.setStyleSheet(
+                f"font-size: 40px;" 
+                f"border: 1px solid {borders};" 
+                f"border-radius: 5px;" 
+                f"background-color: {inProgressColor};"
+                "padding: 10px;" 
+                "color: white;"
+            )
         elif status == "Disposal In Progress":
-            self.statusLabel.setStyleSheet(f"height: 100px; width: 100px; font-size: 40px; background-color: {inProgressColor}; color: {warningText};")
+             self.statusLabel.setStyleSheet(
+                f"font-size: 40px;" 
+                f"border: 1px solid {borders};" 
+                f"border-radius: 5px;" 
+                f"background-color: {inProgressColor};"
+                "padding: 10px;" 
+                "color: white;"
+            )           
         elif status == "Aborting Calibration":
-            self.statusLabel.setStyleSheet(f"height: 100px; width: 100px; font-size: 40px; background-color: {abortButtonColor}; color: {warningText};")
+            self.statusLabel.setStyleSheet(
+                f"font-size: 40px;" 
+                f"border: 1px solid {borders};" 
+                f"border-radius: 5px;" 
+                f"background-color: {warningColor};"
+                "padding: 10px;" 
+                f"color: {warningText};"
+            )           
         elif status == "Showing Previous Event":
-            self.statusLabel.setStyleSheet(f"height: 100px; width: 100px; font-size: 40px; background-color: {standbyColor}; color: {m_s_buttonText};")
+             self.statusLabel.setStyleSheet(
+                f"font-size: 40px;" 
+                f"border: 1px solid {borders};" 
+                f"border-radius: 5px;" 
+                f"background-color: {standbyColor};"
+                "padding: 10px;" 
+                "color: {standbyText};"
+            )           
         else:
-            self.statusLabel.setStyleSheet(f"height: 100px; width: 100px; font-size: 40px; background-color: {standbyColor}; color: {m_s_buttonText};")
+            self.statusLabel.setStyleSheet(
+                f"font-size: 40px;" 
+                f"border: 1px solid {borders};" 
+                f"border-radius: 5px;" 
+                f"background-color: {standbyColor};"
+                "padding: 10px;" 
+                "color: {standbyText};"
+            )
         
     def toggleAbort(self):
         # Abort button click handler
         print("Abort Clicked")
         self.handleStatusChange("Aborting Calibration")
-        # Click Animation for Abort Button
-        scale_down = QPropertyAnimation(self.abortButton, b'size')
-        scale_down.setDuration(100)  # Duration in milliseconds
-        scale_down.setEndValue(self.abortButton.size() * 0.95)  # Scale down to 95%
-        scale_down.setEasingCurve(QEasingCurve.Type.InOutQuad)
-
-        scale_up = QPropertyAnimation(self.abortButton, b'size')
-        scale_up.setDuration(100)  # Duration in milliseconds
-        scale_up.setEndValue(self.abortButton.size())  # Scale back to original size
-        scale_up.setEasingCurve(QEasingCurve.Type.InOutQuad)
-
-        self.abort_click_animation = QSequentialAnimationGroup()
-        self.abort_click_animation.addAnimation(scale_down)
-        self.abort_click_animation.addAnimation(scale_up)
-
-        self.abort_click_animation.start(QAbstractAnimation.DeletionPolicy.DeleteWhenStopped)
         
         
           
@@ -177,50 +246,17 @@ class HMIWindow(QWidget):
         # Disposal button click handler
         print("Disposal Clicked")
         self.handleStatusChange("Disposal In Progress")
-        # Click Animation for Dispose Button
-        scale_down = QPropertyAnimation(self.disposeButton, b'size')
-        scale_down.setDuration(100)  # Duration in milliseconds
-        scale_down.setEndValue(self.disposeButton.size() * 0.95)  # Scale down to 95%
-        scale_down.setEasingCurve(QEasingCurve.Type.InOutQuad)
 
-        scale_up = QPropertyAnimation(self.disposeButton, b'size')
-        scale_up.setDuration(100)  # Duration in milliseconds
-        scale_up.setEndValue(self.disposeButton.size())  # Scale back to original size
-        scale_up.setEasingCurve(QEasingCurve.Type.InOutQuad)
-
-        self.dispose_click_animation = QSequentialAnimationGroup()
-        self.dispose_click_animation.addAnimation(scale_down)
-        self.dispose_click_animation.addAnimation(scale_up)
-
-        self.dispose_click_animation.start(QAbstractAnimation.DeletionPolicy.DeleteWhenStopped)
 
     def toggleEventLog(self):
         # Event button click handler
         
         # Toggle The Button Text
-        if self.eventButton.text() == "Close Menu":
-            self.eventButton.setText("Menu")
+        if self.eventButton.text() == "☰":
+            self.eventButton.setText("X")
         else:
-            self.eventButton.setText("Close Menu")
-        
-        # Click Animation for Event Log Button
-        scale_down = QPropertyAnimation(self.eventButton, b'size')
-        scale_down.setDuration(100)  # Duration in milliseconds
-        scale_down.setEndValue(self.eventButton.size() * 0.95)  # Scale down to 95%
-        scale_down.setEasingCurve(QEasingCurve.Type.InOutQuad)
-
-        scale_up = QPropertyAnimation(self.eventButton, b'size')
-        scale_up.setDuration(100)  # Duration in milliseconds
-        scale_up.setEndValue(self.eventButton.size())  # Scale back to original size
-        scale_up.setEasingCurve(QEasingCurve.Type.InOutQuad)
-
-        self.click_animation = QSequentialAnimationGroup()
-        self.click_animation.addAnimation(scale_down)
-        self.click_animation.addAnimation(scale_up)
-
-        self.click_animation.start(QAbstractAnimation.DeletionPolicy.DeleteWhenStopped)
-            
-        
+            self.eventButton.setText("☰")
+                 
         # Animation for sidebar
         self.animation = QPropertyAnimation(self.sidebar, b"pos")
         self.animation.setDuration(500)  # Animation duration in milliseconds
@@ -242,22 +278,6 @@ class HMIWindow(QWidget):
         self.handleStatusChange("In Progress")
         self.graph.tempLiveData()
         
-        # Click Animation for Start Button
-        scale_down = QPropertyAnimation(self.startButton, b'size')
-        scale_down.setDuration(100)  # Duration in milliseconds
-        scale_down.setEndValue(self.startButton.size() * 0.95)  # Scale down to 95%
-        scale_down.setEasingCurve(QEasingCurve.Type.InOutQuad)
-
-        scale_up = QPropertyAnimation(self.startButton, b'size')
-        scale_up.setDuration(100)  # Duration in milliseconds
-        scale_up.setEndValue(self.startButton.size())  # Scale back to original size
-        scale_up.setEasingCurve(QEasingCurve.Type.InOutQuad)
-
-        self.start_click_animation = QSequentialAnimationGroup()
-        self.start_click_animation.addAnimation(scale_down)
-        self.start_click_animation.addAnimation(scale_up)
-
-        self.start_click_animation.start(QAbstractAnimation.DeletionPolicy.DeleteWhenStopped)
         
     def onEventSelected(self, eventId):
         # Call the method on MakeGraph to show the event log graph
