@@ -65,7 +65,7 @@ class EventLog(QWidget):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
         screen = QApplication.primaryScreen().geometry()
-        self.setFixedSize(screen.width()-300, screen.height() - 100)
+        self.setFixedSize(300, 650)
         self.layout.setContentsMargins(20, 150, 10, 10)
         self.setAutoFillBackground(True)
         
@@ -101,7 +101,7 @@ class EventLog(QWidget):
             events[event_key] = read_event('./logs/events.txt', i * 5 + offset)
             offset = offset + 1
             frames[event_key] = QPushButton(self.scrollContent)
-            # frames[event_key].setFixedSize(screen.width()-300, 150)
+            frames[event_key].setFixedSize(100, 150)
             frames[event_key].setStyleSheet(
                 f"background: {eventLogBackground};"
                 "height: 150px;"

@@ -59,7 +59,7 @@ class HMIWindow(QWidget):
         #self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
         #self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         screen = QApplication.primaryScreen().geometry()
-        self.setGeometry(0, 0, screen.width(),screen.height())
+        self.setGeometry(0, 0, 1024, 600)
         # self.showFullScreen()
         gridLayout = QGridLayout(self)  # Initialize a QGridLayout
         self.sidebar = EventLog(self)
