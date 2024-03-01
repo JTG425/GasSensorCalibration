@@ -29,6 +29,13 @@ from graph import MakeGraph
 # --error-text: #f98484;
 
 windowBackground = "#18191b"
+windowBackground1 = "rgba(255,0,0,1)"
+windowBackground2 = "rgba(255,118,0,1)"
+windowBackground3 = "rgba(255,239,0,1)"
+windowBackground4 = "rgba(23,255,0,1)"
+windowBackground5 = "rgba(0,18,255,1)"
+windowBackground6 = "rgba(223,0,255,1)"
+
 buttonColor = "#0857a9"
 m_s_buttonText = "#84bdf9"
 warningText = "#f9f984"
@@ -58,34 +65,48 @@ class HMIWindow(QWidget):
         self.isEventSelected = False
 
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
-        #self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
+        self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         screen = QApplication.primaryScreen().geometry()
         self.setGeometry(0, 0, screen.width(), screen.height())
-        # self.showFullScreen()
+        #self.showFullScreen()
         gridLayout = QGridLayout(self)  # Initialize a QGridLayout
         gridLayout.setContentsMargins(10, 50, 10, 10)
         self.sidebar = EventLog(self)
+
+        
+        
         self.sidebar.move(QPoint(-self.sidebar.width(), 0))
         self.graph = MakeGraph(self)
         self.setStyleSheet(
             f"background: {windowBackground};"
         )
         
-        
-        # Linear Gradient Setup
-        # self.setStyleSheet(
-        #     "background-color: qlineargradient("
-        #     "x1: 0, y1:0," 
-        #     "x2: 1, y2: 1," 
-        #     f"stop: 0 {windowBackground1}," 
-        #     f"stop: 1 {windowBackground2});"
-        #     )
+        self.topBar = QFrame(self.sidebar)
+        self.topBar.setFixedSize(screen.width()-500, 10)
+        self.topBar.setStyleSheet(
+            f"background: {graphBackground};"
+            f"border-bottom: 1px solid {borders};"
+        )
+        self.topBar.move(QPoint(-self.sidebar.width(),46))
         
         # Signal Connections
         self.sidebar.eventTime.connect(self.graph.setEventTime)
         self.sidebar.eventData.connect(self.graph.setEventData)
         self.sidebar.eventDate.connect(self.graph.setEventDate)
         self.sidebar.eventSelected.connect(self.onEventSelected)
+        
+        # Create A Power Button that can be used to turn off the device (Kill The Python Script)
+        self.powerButton = QPushButton("⏻", self)
+        self.powerButton.setFixedSize(75, 75)
+        self.powerButton.clicked.connect(self.onPowerButtonClick)
+        self.powerButton.setStyleSheet(
+            f"background: {abortButtonColor};"
+            "color: white;"
+            "font-size: 20px;"
+            "border: 1px solid #3b4045;"
+            "border-radius: 5px;"
+        )
+        self.powerButton.move(QPoint(-self.sidebar.width(),46))
     
         
 
@@ -258,7 +279,29 @@ class HMIWindow(QWidget):
             self.eventButton.setText("X")
         else:
             self.eventButton.setText("☰")
-                 
+            
+        # Animation for TopBar Button
+        self.topBar = QPropertyAnimation(self.topBar, b"pos")
+        self.topBar.setDuration(500)  # Animation duration in milliseconds
+        
+        if self.sideBarShown:  # If sidebar is off-screen, slide it into view
+            self.topBar.setEndValue(QPoint(-10,0))
+        else:  # If sidebar is in view, slide it out of view
+            self.topBar.setEndValue(QPoint(-self.sidebar.width(), 46))
+            
+        self.topBar.start()
+            
+        # Animation for Power Button
+        self.powerAnimation = QPropertyAnimation(self.powerButton, b"pos")
+        self.powerAnimation.setDuration(500)  # Animation duration in milliseconds
+        
+        if self.sideBarShown:  # If sidebar is off-screen, slide it into view
+            self.powerAnimation.setEndValue(QPoint(self.sidebar.width()-120,46))
+        else:  # If sidebar is in view, slide it out of view
+            self.powerAnimation.setEndValue(QPoint(-self.sidebar.width(), 46))
+            
+        self.powerAnimation.start()
+            
         # Animation for sidebar
         self.animation = QPropertyAnimation(self.sidebar, b"pos")
         self.animation.setDuration(500)  # Animation duration in milliseconds
@@ -270,7 +313,9 @@ class HMIWindow(QWidget):
         
         self.animation.start()
         self.sidebar.raise_()
+        self.powerButton.raise_()
         self.eventButton.raise_()  # Ensure the event button is always on top
+  
         
 
 
@@ -286,6 +331,11 @@ class HMIWindow(QWidget):
         self.toggleEventLog()
         self.handleStatusChange("Showing Previous Event")
         self.graph.showEventLog()
+        
+    def onPowerButtonClick(self):
+        # Power button click handler
+        print("Power button clicked!")
+        sys.exit()
 
 def main():
     app = QApplication(sys.argv)

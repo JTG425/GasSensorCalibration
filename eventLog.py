@@ -73,7 +73,7 @@ class EventLog(QWidget):
         screen = QApplication.primaryScreen().geometry()
         self.setFixedSize(screen.width()-500, screen.height())
         self.setAutoFillBackground(True)
-        
+
         
         # Create the scroll area
         self.scrollArea = QScrollArea(self)
@@ -132,3 +132,4 @@ class EventLog(QWidget):
             
             # Sends List of Calibration Data to Graph.py For use as the y axis
             frames[event_key].clicked.connect(lambda checked, eventId=i: self.eventData.emit(list(map(float, events[f"event_{eventId}"][4].split()))))
+
