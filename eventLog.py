@@ -4,7 +4,6 @@ from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QColor, QPalette, QScreen
 from graph import MakeGraph
 
-
 # Color Palette
 # --GraphBackground: #f9fafc;
 # --GraphLine And Button Color: #526da4;
@@ -22,6 +21,12 @@ from graph import MakeGraph
 # --standby: #52a452;
 # --inprogress: #a4a452;
 # --warning: #a45252;
+
+'''
+    This class is responsible for creating the event log that displays the events that have taken place
+    The 'events.txt' file is populated with 
+
+'''
 
 windowBackground = "#18191b"
 buttonColor = "#0857a9"

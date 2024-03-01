@@ -13,6 +13,7 @@ class MakeGraph(QWidget):
     data = {}  # Data points
     eventTime = {}  # Event Time Points
     eventData = {}  # Event Data Points
+
     
     def __init__(self, parent=None):
         super(MakeGraph, self).__init__(parent)
@@ -22,7 +23,9 @@ class MakeGraph(QWidget):
         self.eventDateValue = None
         self.counter = 0
         self.eventCounter = 0
+        self.operation = "standby"
         self.initUI()
+
         
     def initUI(self):
         layout = QVBoxLayout(self)  # Main layout
@@ -61,15 +64,35 @@ class MakeGraph(QWidget):
         self.graphWidget.getPlotItem().layout.setContentsMargins(0, 0, 0, 25)  # Left, Top, Right, Bottom margins
         
         layout.addWidget(self.graphFrame)  # Add the graphFrame to the main layout
-
-        self.tempLiveData()
+            
+    def showStandByGraph(self):
+        print("Standby mode activated")
         
+    def handleAbort(self):
+        print("Abort button pressed")
+        self.showLive = False
+        self.timer.stop()
+        self.graphWidget.clear()
+        self.counter = 0
+         
+        
+    # This Function Will Be where the sensor Input will be processed.
+    # For now, it will be a temporary function to test the graph.
+    # It should also Write the data to a file for future Event Log Use.
     def tempLiveData(self):
+        self.graphWidget.clear()
+        self.counter = 0
+        self.showLive = True
         for i in range(1, 100):
             self.time[i] = i
-            self.data[i] = 0
+            self.data[i] = i^2
+        with open('logs/events.txt', 'a') as file:
+            for key in self.time.keys():
+                file.write(f"{key},{self.data[key]} ")
+        
         
         self.showLiveGraph()
+        
         
     def showLiveGraph(self):
         self.timer = QTimer(self)  # QTimer to update the graph

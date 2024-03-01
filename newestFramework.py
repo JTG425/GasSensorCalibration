@@ -63,6 +63,7 @@ class HMIWindow(QWidget):
 
     def initializeUI(self):
         self.isEventSelected = False
+        self.operation = "standby"
 
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
@@ -261,6 +262,7 @@ class HMIWindow(QWidget):
         # Abort button click handler
         print("Abort Clicked")
         self.handleStatusChange("Aborting Calibration")
+        self.graph.handleAbort()
         
         
           
