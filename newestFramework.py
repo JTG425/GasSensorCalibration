@@ -1,9 +1,11 @@
 import sys
 import time
+import random
 from PyQt6 import *
 from PyQt6.QtWidgets import *
 from PyQt6.QtCore import *
 from PyQt6.QtGui import *
+from datetime import datetime
 from eventLog import EventLog
 from graph import MakeGraph
 
@@ -29,12 +31,10 @@ from graph import MakeGraph
 # --error-text: #f98484;
 
 windowBackground = "#18191b"
-windowBackground1 = "rgba(255,0,0,1)"
-windowBackground2 = "rgba(255,118,0,1)"
-windowBackground3 = "rgba(255,239,0,1)"
-windowBackground4 = "rgba(23,255,0,1)"
-windowBackground5 = "rgba(0,18,255,1)"
-windowBackground6 = "rgba(223,0,255,1)"
+screensaver1 = 'rgba(28,30,35,1)'
+screensaver2 = 'rgba(57,75,116,1)'
+screensaver3 = 'rgba(58,102,201,1)'
+
 
 buttonColor = "#0857a9"
 m_s_buttonText = "#84bdf9"
@@ -58,6 +58,9 @@ class HMIWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.eventID = None
+        self.maintimer = QTimer(self)
+        # self.maintimer.timeout.connect(self.updateScreenSaverTime) IGNORE for now
+        self.maintimer.start(1000)  # Start the timer with 1-second intervals
         self.initializeUI()
 
 
@@ -65,22 +68,46 @@ class HMIWindow(QWidget):
         self.isEventSelected = False
         self.operation = "standby"
 
+        # Sets the Window dimensions and Styling
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         screen = QApplication.primaryScreen().geometry()
         self.setGeometry(0, 0, screen.width(), screen.height())
         #self.showFullScreen()
+        self.setStyleSheet(
+            f"background-color: {windowBackground};"
+            "padding: 10px;"
+        )
         gridLayout = QGridLayout(self)  # Initialize a QGridLayout
         gridLayout.setContentsMargins(10, 50, 10, 10)
         self.sidebar = EventLog(self)
 
-        
+        # Creates a Screesaver like effect THat will snow the Time and when
+        # anywhere on screen is clicked, the main screen shows.
+        time = datetime.now()
+        self.timer = QTimer(self)  # QTimer to update the time
+        self.timer.timeout.connect(self.updateScreenSaverTime)
+        self.timer.start(1000)  # Start the timer with 1-second intervals
+          
+        regular_time = time.strftime("%I:%M:%S %p")
+        self.screensaver = QPushButton(regular_time, self)
+        self.screensaver.setFixedSize(screen.width(), screen.height())
+        self.screensaver.setStyleSheet(f"""
+            background: qlineargradient(
+                x1: 0, y1: 0,
+                x2: 0.5, y2: 0.5,
+                x3: 1,  y3: 0.1,
+                stop: 0 {screensaver1}, 
+                stop: 1 {screensaver2}, 
+                stop: 2 {screensaver3}); 
+            border: none;
+            color: white;
+            font-size: 150px;
+        """)
+        self.screensaver.clicked.connect(self.handleScreensaver)
         
         self.sidebar.move(QPoint(-self.sidebar.width(), 0))
         self.graph = MakeGraph(self)
-        self.setStyleSheet(
-            f"background: {windowBackground};"
-        )
         
         self.topBar = QFrame(self.sidebar)
         self.topBar.setFixedSize(screen.width()-500, 10)
@@ -96,6 +123,14 @@ class HMIWindow(QWidget):
         self.sidebar.eventDate.connect(self.graph.setEventDate)
         self.sidebar.eventSelected.connect(self.onEventSelected)
         
+        # Call CreateElements Function
+        self.createElements(gridLayout)
+
+        self.setStyles()
+        self.screensaver.raise_()
+        self.setLayout(gridLayout)
+        
+    def createElements(self, gridLayout):
         # Create A Power Button that can be used to turn off the device (Kill The Python Script)
         self.powerButton = QPushButton("⏻", self)
         self.powerButton.setFixedSize(75, 75)
@@ -144,15 +179,9 @@ class HMIWindow(QWidget):
         
         # Graph at row 2 and column 0 to 5
         # Graph Defined in graph.py
-        gridLayout.addWidget(self.graph, 2, 0, 6, 8)
+        gridLayout.addWidget(self.graph, 2, 0, 6, 8)      
         
-    
-
-        palette = self.palette()
-        palette.setColor(QPalette.ColorRole.Window, QColor('#efeff1'))
-        self.setPalette(palette)
-        self.setAutoFillBackground(True)
-
+    def setStyles(self):
         # styles
         self.eventButton.setStyleSheet(
             f"color: {m_s_buttonText};" 
@@ -198,8 +227,21 @@ class HMIWindow(QWidget):
             "padding: 10px;" 
             "color: {standbyText};"
         )
+        
+        
+    def handleScreensaver(self):
+        # When Screen is clicked, the main screen shows
+        self.screensaver.hide()
+        self.timer.stop()
+        
+        
 
-        self.setLayout(gridLayout)
+    def updateScreenSaverTime(self):
+        # Update the time on the screen saver
+        time = datetime.now()
+        regular_time = time.strftime("%I:%M:%S %p")
+        self.screensaver.setText(regular_time)
+     
         
     def handleStatusChange(self, status):
         self.statusLabel.setText(f"Status: {status}")
