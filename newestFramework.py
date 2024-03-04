@@ -31,9 +31,9 @@ from graph import MakeGraph
 # --error-text: #f98484;
 
 windowBackground = "#18191b"
-screensaver1 = 'rgba(28,30,35,1)'
-screensaver2 = 'rgba(57,75,116,1)'
-screensaver3 = 'rgba(58,102,201,1)'
+screensaver1 = 'rgba(28,30,35,0.9)'
+screensaver2 = 'rgba(57,75,116,0.9)'
+screensaver3 = 'rgba(58,102,201,0.9)'
 
 
 buttonColor = "#0857a9"
@@ -58,9 +58,10 @@ class HMIWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.eventID = None
-        self.maintimer = QTimer(self)
-        # self.maintimer.timeout.connect(self.updateScreenSaverTime) IGNORE for now
-        self.maintimer.start(1000)  # Start the timer with 1-second intervals
+        self.toggleSaver = QTimer(self)
+        self.toggleSaver.timeout.connect(self.toggleScreenSaver)
+        self.toggleSaver.start(1000)  # Start the timer with 1-second intervals
+        self.saverCounter = 0;
         self.initializeUI()
 
 
@@ -89,7 +90,12 @@ class HMIWindow(QWidget):
         self.timer.timeout.connect(self.updateScreenSaverTime)
         self.timer.start(1000)  # Start the timer with 1-second intervals
           
-        regular_time = time.strftime("%I:%M:%S %p")
+        regular_time = ""
+        if time.hour % 12 > 10:
+            regular_time = time.strftime("%I:%M %p")
+        else:
+            regular_time = time.strftime("%-I:%M %p")
+            
         self.screensaver = QPushButton(regular_time, self)
         self.screensaver.setFixedSize(screen.width(), screen.height())
         self.screensaver.setStyleSheet(f"""
@@ -102,20 +108,13 @@ class HMIWindow(QWidget):
                 stop: 2 {screensaver3}); 
             border: none;
             color: white;
-            font-size: 150px;
+            font-size: 200px;
         """)
+        
         self.screensaver.clicked.connect(self.handleScreensaver)
         
         self.sidebar.move(QPoint(-self.sidebar.width(), 0))
         self.graph = MakeGraph(self)
-        
-        self.topBar = QFrame(self.sidebar)
-        self.topBar.setFixedSize(screen.width()-500, 10)
-        self.topBar.setStyleSheet(
-            f"background: {graphBackground};"
-            f"border-bottom: 1px solid {borders};"
-        )
-        self.topBar.move(QPoint(-self.sidebar.width(),46))
         
         # Signal Connections
         self.sidebar.eventTime.connect(self.graph.setEventTime)
@@ -148,26 +147,26 @@ class HMIWindow(QWidget):
 
         # Event Log button at row 0, column 0, spanning 2x2
         self.eventButton = QPushButton("☰")
-        self.eventButton.setFixedSize(75, 75)
+        self.eventButton.setFixedSize(75, 100)
         self.eventButton.clicked.connect(self.toggleEventLog)
         gridLayout.addWidget(self.eventButton, 0, 0, 1, 1)
         
         # Abort at row 0, column 1, spanning 2x4
         self.abortButton = QPushButton("Abort")
-        self.abortButton.setFixedSize(125, 75)
+        self.abortButton.setFixedSize(125, 100)
         self.abortButton.clicked.connect(self.toggleAbort)
         gridLayout.addWidget(self.abortButton, 0, 1, 1, 1)
         
         # Dispose at row 0, column 6
         self.disposeButton = QPushButton("Dispose")
-        self.disposeButton.setFixedSize(225, 75)
+        self.disposeButton.setFixedSize(500, 100)
         self.disposeButton.clicked.connect(self.toggleDisposal)     
         gridLayout.addWidget(self.disposeButton, 0, 6, 1, 1)
         
 
         # Start button at row 0, column 7
         self.startButton = QPushButton("Start")
-        self.startButton.setFixedSize(225, 75)
+        self.startButton.setFixedSize(500, 100)
         self.startButton.clicked.connect(self.onStartButtonClick)
         gridLayout.addWidget(self.startButton, 0, 7, 1, 1)
         
@@ -175,7 +174,7 @@ class HMIWindow(QWidget):
         self.statusLabel = QLabel("Status: Standby")
         self.statusLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
         gridLayout.addWidget(self.statusLabel, 1, 0, 1, 8)
-        
+
         
         # Graph at row 2 and column 0 to 5
         # Graph Defined in graph.py
@@ -228,18 +227,30 @@ class HMIWindow(QWidget):
             "color: {standbyText};"
         )
         
+    # After 300 seconds of inactivity (5 Minutes), the screen saver will show
+    def toggleScreenSaver(self):
+        self.saverCounter = self.saverCounter + 1;
+        print(self.saverCounter)
+        if(self.saverCounter >= 300):
+            self.screensaver.show()
+            self.toggleSaver.stop()
         
     def handleScreensaver(self):
         # When Screen is clicked, the main screen shows
         self.screensaver.hide()
-        self.timer.stop()
+        self.saverCounter = 0
+        self.toggleSaver.start(1000)
         
         
 
     def updateScreenSaverTime(self):
         # Update the time on the screen saver
         time = datetime.now()
-        regular_time = time.strftime("%I:%M:%S %p")
+        regular_time = ""
+        if time.hour % 12 > 10:
+            regular_time = time.strftime("%I:%M %p")
+        else:
+            regular_time = time.strftime("%-I:%M %p")
         self.screensaver.setText(regular_time)
      
         
@@ -301,20 +312,34 @@ class HMIWindow(QWidget):
             )
         
     def toggleAbort(self):
+        self.saverCounter = 0
+        self.toggleSaver.stop()
         # Abort button click handler
         print("Abort Clicked")
         self.handleStatusChange("Aborting Calibration")
         self.graph.handleAbort()
         
+        # After Aborting Is Done
+        self.saverCounter = 0
+        self.toggleSaver.start(1000)
+        
         
           
     def toggleDisposal(self):
+        self.saverCounter = 0
+        self.toggleSaver.stop()
         # Disposal button click handler
         print("Disposal Clicked")
         self.handleStatusChange("Disposal In Progress")
+        
+        # After Disposal is done
+        self.saverCounter = 0
+        self.toggleSaver.start(1000)
 
 
     def toggleEventLog(self):
+        self.saverCounter = 0
+        self.toggleSaver.stop()
         # Event button click handler
         self.sideBarShown = not self.sideBarShown
         
@@ -323,17 +348,6 @@ class HMIWindow(QWidget):
             self.eventButton.setText("X")
         else:
             self.eventButton.setText("☰")
-            
-        # Animation for TopBar Button
-        self.topBar = QPropertyAnimation(self.topBar, b"pos")
-        self.topBar.setDuration(500)  # Animation duration in milliseconds
-        
-        if self.sideBarShown:  # If sidebar is off-screen, slide it into view
-            self.topBar.setEndValue(QPoint(-10,0))
-        else:  # If sidebar is in view, slide it out of view
-            self.topBar.setEndValue(QPoint(-self.sidebar.width(), 46))
-            
-        self.topBar.start()
             
         # Animation for Power Button
         self.powerAnimation = QPropertyAnimation(self.powerButton, b"pos")
@@ -364,17 +378,30 @@ class HMIWindow(QWidget):
 
 
     def onStartButtonClick(self):
+        self.saverCounter = 0
+        self.toggleSaver.stop()
+        
         # Start button click handler
         print("Start button clicked!")
         self.handleStatusChange("In Progress")
         self.graph.tempLiveData()
         
+        # After Graphing is done
+        self.saverCounter = 0
+        self.toggleSaver.start(1000)
+        
         
     def onEventSelected(self, eventId):
+        self.saverCounter = 0
+        self.toggleSaver.stop()
         # Call the method on MakeGraph to show the event log graph
         self.toggleEventLog()
         self.handleStatusChange("Showing Previous Event")
         self.graph.showEventLog()
+        
+        # After Graphing is done
+        self.saverCounter = 0
+        self.toggleSaver.start(1000)
         
     def onPowerButtonClick(self):
         # Power button click handler

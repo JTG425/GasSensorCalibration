@@ -101,7 +101,7 @@ class EventLog(QWidget):
         # Example content in the sidebar
         self.title = QLabel("Event Log", self.scrollContent)
         self.title.setStyleSheet(
-            "font-size: 30px;"
+            "font-size: 48px;"
             "color: white;"
         )
         self.title.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
@@ -120,8 +120,10 @@ class EventLog(QWidget):
             frames[event_key].setStyleSheet(
                 f"background: {eventLogBackground};"
                 f"color: {m_s_buttonText};"
+                "font-size: 24px;"
                 "height: 100px;"
                 f"border: 1px solid {borders};"
+                "margin-bottom: 10px;"
             )
             self.scrollLayout.addWidget(frames[event_key])
             frames[event_key].setText(events[event_key][0])

@@ -54,7 +54,7 @@ class MakeGraph(QWidget):
         
         # Increase the font size for axis labels
         axisFont = QFont()
-        axisFont.setPixelSize(14)  # Set the desired font size
+        axisFont.setPixelSize(24)  # Set the desired font size
         self.graphWidget.getPlotItem().getAxis('left').setTickFont(axisFont)
         self.graphWidget.getPlotItem().getAxis('bottom').setTickFont(axisFont)
         self.graphWidget.setLabel('left', 'PPM', **{'font-size': '24pt'},  **{'color': 'w'})
@@ -62,6 +62,7 @@ class MakeGraph(QWidget):
 
         # Adjusting bottom margin to ensure the bottom axis title is not cut off
         self.graphWidget.getPlotItem().layout.setContentsMargins(0, 0, 0, 25)  # Left, Top, Right, Bottom margins
+        
         
         layout.addWidget(self.graphFrame)  # Add the graphFrame to the main layout
             
@@ -109,7 +110,7 @@ class MakeGraph(QWidget):
                 self.graphWidget.plot(time_keys, data_values, pen=pg.mkPen(self.graphLine, width=8))
                 self.counter += 1
             else:
-                self.timer.stop()  # Stop the timer if all points are plotted
+                self.timer.stop()
         else:
             return
 
