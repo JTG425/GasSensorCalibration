@@ -3,6 +3,8 @@ from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QFrame
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QFont
 import pyqtgraph as pg
+import smbus
+import time
 
 class MakeGraph(QWidget):
     graphBackground = "#232629"
@@ -13,6 +15,7 @@ class MakeGraph(QWidget):
     data = {}  # Data points
     eventTime = {}  # Event Time Points
     eventData = {}  # Event Data Points
+    sensor_address = 0x50
 
     
     def __init__(self, parent=None):
@@ -80,27 +83,46 @@ class MakeGraph(QWidget):
     # This Function Will Be where the sensor Input will be processed.
     # For now, it will be a temporary function to test the graph.
     # It should also Write the data to a file for future Event Log Use.
-    def tempLiveData(self):
+    # def tempLiveData(self):
+    #     self.graphWidget.clear()
+    #     self.counter = 0
+    #     self.showLive = True
+    #     for i in range(1, 100):
+    #         self.time[i] = i
+    #         self.data[i] = i^2
+    #     with open('logs/events.txt', 'a') as file:
+    #         for key in self.time.keys():
+    #             file.write(f"{key},{self.data[key]} ")
+        
+        
+    #     self.showLiveGraph()
+        
+        
+    def recieveSensorData(self, time, data):
         self.graphWidget.clear()
-        self.counter = 0
-        self.showLive = True
-        for i in range(1, 100):
-            self.time[i] = i
-            self.data[i] = i^2
-        with open('logs/events.txt', 'a') as file:
-            for key in self.time.keys():
-                file.write(f"{key},{self.data[key]} ")
+        # Initialize I2C Sensor
+        bus = smbus.SMBus(1)
+
         
-        
-        self.showLiveGraph()
-        
-        
-    def showLiveGraph(self):
         self.timer = QTimer(self)  # QTimer to update the graph
         self.timer.timeout.connect(self.updateLiveGraph)
         self.timer.start(1000)  # Start the timer with 1-second intervals
         
-        print("Live graph shown")
+            
+    def showLiveGraph(self):
+        if self.showLive:
+            data = bus.read_i2c_block_data(sensor_address, 0x00, 2)
+            
+            sensor_value = data[0] << 8 | data[1]
+            
+            self.data[self.counter] = sensor_value
+            self.time[self.counter] = self.counter
+        
+            self.updateLiveGraph()
+            print("Live graph shown")
+            self.counter += 1
+        else:
+            self.timer.stop()
         
     def updateLiveGraph(self):
         if self.showLive:
