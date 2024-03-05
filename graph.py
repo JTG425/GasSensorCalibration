@@ -89,7 +89,7 @@ class MakeGraph(QWidget):
         self.graphWidget.clear()
         self.counter = 0
         self.showLive = True
-        for i in range(1, 100):
+        for i in range(1, 10):
             self.time[i] = i
             self.data[i] = i^2
         with open('logs/events.txt', 'a') as file:
@@ -135,7 +135,7 @@ class MakeGraph(QWidget):
         if self.disposal:
             print("Disposal mode activated")
             lastPPM = self.data[self.counter - 1]
-            for i in range(self.counter+1, self.counter + 100):
+            for i in range(self.counter+1, self.counter + 20):
                 self.time[i] = i
                 self.data[i] = lastPPM - (i - self.counter)
                 if self.data[i] < 0:
