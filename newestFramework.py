@@ -333,27 +333,37 @@ class HMIWindow(QWidget):
         self.toggleSaver.start(1000)
         
     def makeBubbles(self, screensaver):
+        self.bubbleGroup = QSequentialAnimationGroup()
         for i in range(0, 50):
-            bubble = QFrame(screensaver)
+            bubble = QLabel(screensaver)  # Use QLabel for better control over the styling
             bubble.setFixedSize(50, 50)
-            bubbleColor = 'rgba(255,255,255,0.25)'
+            bubbleColor = "rgba(255,255,255,0.25)"
             bubble.setStyleSheet(
                 f"background-color: {bubbleColor};"
                 f"border-radius: 25px;"
             )
             bubble.move(QPoint(random.randint(0, self.screen.width()), random.randint(0, self.screen.height())))
             bubble.show()
-            bubble.raise_()
-            self.animateBubble(bubble)
-            
+
+            animation = self.animateBubble(bubble)
+            self.bubbleGroup.addAnimation(animation)
+
+        self.bubbleGroup.start()
+
     def animateBubble(self, bubble):
         bubbleAnimation = QPropertyAnimation(bubble, b"pos")
-        bubbleAnimation.setDuration(1000)
-        bubbleAnimation.setStartValue(QPoint(bubble.pos().x(), bubble.pos().y()))
-        newX = bubble.pos().x() + random.randint(-100, 100)
-        newY = bubble.pos().y() + random.randint(-100, 100)
-        bubbleAnimation.setEndValue(QPoint(newX, newY))
-        bubbleAnimation.start()
+        bubbleAnimation.setDuration(100000)
+
+        def updateAnimation():
+            newX = bubble.x() + random.randint(-1000, 1000)
+            newY = bubble.y() + random.randint(-1000, 1000)
+            bubbleAnimation.setEndValue(QPoint(newX, newY))
+            bubbleAnimation.start() 
+
+        bubbleAnimation.finished.connect(updateAnimation)
+        updateAnimation()
+
+        return bubbleAnimation
             
         
         
