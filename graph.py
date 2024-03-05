@@ -150,6 +150,7 @@ class MakeGraph(QWidget):
                 time_keys = list(self.time.keys())[:self.counter + 1]
                 data_values = [self.data[key] for key in time_keys]
                 self.graphWidget.plot(time_keys, data_values, pen=pg.mkPen(self.graphLine, width=8))
+                    
                 self.counter += 1
             else:
                 self.timer.stop()

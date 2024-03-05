@@ -72,8 +72,8 @@ class HMIWindow(QWidget):
         # Sets the Window dimensions and Styling
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
-        screen = QApplication.primaryScreen().geometry()
-        self.setGeometry(0, 0, screen.width(), screen.height())
+        self.screen = QApplication.primaryScreen().geometry()
+        self.setGeometry(0, 0, self.screen.width(), self.screen.height())
         self.showFullScreen()
         self.setStyleSheet(
             f"background-color: {windowBackground};"
@@ -97,10 +97,10 @@ class HMIWindow(QWidget):
             regular_time = time.strftime("%-I:%M %p")
             
         self.screensaver = QPushButton(regular_time, self)
-        self.screensaver.setFixedSize(screen.width(), screen.height())
+        self.screensaver.setFixedSize(self.screen.width(), self.screen.height())
         self.screensaver.setStyleSheet(f"""
             background: qlineargradient(
-                x1: 0, y1: 0,
+                x1: 0, y1: 9,
                 x2: 0.5, y2: 0.5,
                 x3: 1,  y3: 0.1,
                 stop: 0 {screensaver1}, 
@@ -110,7 +110,8 @@ class HMIWindow(QWidget):
             color: white;
             font-size: 200px;
         """)
-        
+        self.screensaver.move(QPoint(0,0))
+        self.screensaver.show()
         self.screensaver.clicked.connect(self.handleScreensaver)
         
         self.sidebar.move(QPoint(-10,-10))
@@ -127,8 +128,8 @@ class HMIWindow(QWidget):
         self.createElements(gridLayout)
 
         self.setStyles()
-        self.screensaver.raise_()
         self.setLayout(gridLayout)
+        self.screensaver.raise_()
         
     def createElements(self, gridLayout):
         # Create A Power Button that can be used to turn off the device (Kill The Python Script)
@@ -143,6 +144,49 @@ class HMIWindow(QWidget):
             "border-radius: 5px;"
         )
         self.powerButton.move(QPoint(-self.sidebar.width(),10))
+        
+        self.powerOptions = QFrame(self)
+        self.powerOptions.setFixedSize(600, 400)
+        width = int(self.screen.width() / 2)
+        height = int(self.screen.height() / 2)
+        self.powerOptions.move(QPoint(width-275, height - 200))
+        self.powerOptions.setStyleSheet(
+            f"background-color: white;"
+            "border: 1px solid #3b4045;"
+            "border-radius: 5px;"
+        )
+        self.powerOptions.hide()
+        
+        self.powerBackground = QFrame(self)
+        self.powerBackground.setFixedSize(self.screen.width(), self.screen.height())
+        self.powerBackground.move(QPoint(0,0))
+        self.powerBackground.setStyleSheet(
+            "background: rgba(0,0,0,0.75);"
+        )
+        self.powerBackground.hide()
+        
+        
+        self.powerOptions.setLayout(QVBoxLayout())
+        self.powerOptions.layout().setContentsMargins(10, 10, 10, 10)
+        
+        self.cancelButton = QPushButton("Close Power Menu", self.powerOptions)
+        self.cancelButton.setFixedSize(550, 100)
+        self.cancelButton.clicked.connect(self.handlePowerCancel)
+        
+        self.shutDownButton = QPushButton("Shut Down", self.powerOptions)
+        self.shutDownButton.setFixedSize(550, 100)
+        self.shutDownButton.clicked.connect(self.handleShutDown)
+        
+        self.restartButton = QPushButton("Restart", self.powerOptions)
+        self.restartButton.setFixedSize(550, 100)
+        self.restartButton.clicked.connect(self.handleRestart)
+
+        
+        self.powerOptions.layout().setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.powerOptions.layout().addWidget(self.cancelButton)        
+        self.powerOptions.layout().addWidget(self.shutDownButton)
+        self.powerOptions.layout().addWidget(self.restartButton)
+
     
         
 
@@ -194,7 +238,7 @@ class HMIWindow(QWidget):
             f"border-radius: 5px;"
         )
         self.abortButton.setStyleSheet(
-            f"color: {m_s_buttonText};" 
+            f"color: white;"
             f"background-color: {abortButtonColor};" 
             f"color: {m_s_buttonText};" 
             f"border: 1px solid {borders};"
@@ -227,6 +271,36 @@ class HMIWindow(QWidget):
             f"background-color: {standbyColor};"
             "padding: 10px;" 
             "color: {standbyText};"
+        )
+        self.cancelButton.setStyleSheet(
+            f"color: {m_s_buttonText};"
+            f"background-color: {buttonColor};"
+            f"border: 1px solid {borders};"
+            "font-size: 24px;"
+            "padding: 10px;"
+            "border-radius: 5px;"
+        )
+        self.shutDownButton.setStyleSheet(
+            f"color: white;"
+            f"background-color: {abortButtonColor};"
+            f"border: 1px solid {borders};"
+            "font-size: 24px;"
+            "padding: 10px;"
+            "border-radius: 5px;"
+        )
+        
+        self.powerOptions.setStyleSheet(
+            f"background-color: {windowBackground};"
+            f"border: 1px solid {borders};"
+            "border-radius: 5px;"
+        )
+        self.restartButton.setStyleSheet(
+            f"color: white;"
+            f"background-color: {abortButtonColor};"
+            f"border: 1px solid {borders};"
+            "font-size: 24px;"
+            "padding: 10px;"
+            "border-radius: 5px;"
         )
         
     # After 300 seconds of inactivity (5 Minutes), the screen saver will show
@@ -301,7 +375,18 @@ class HMIWindow(QWidget):
                 f"background-color: {standbyColor};"
                 "padding: 10px;" 
                 "color: {standbyText};"
-            )           
+            )
+        elif status == "Disposal Complete":
+            self.statusLabel.setStyleSheet(
+                f"font-size: 40px;" 
+                f"border: 1px solid {borders};" 
+                f"border-radius: 5px;" 
+                f"background-color: {standbyColor};"
+                "padding: 10px;" 
+                "color: {standbyText};"
+            )
+            self.statusLabel.setText(f"Status: Standby")
+                       
         else:
             self.statusLabel.setStyleSheet(
                 f"font-size: 40px;" 
@@ -402,6 +487,27 @@ class HMIWindow(QWidget):
     def onPowerButtonClick(self):
         # Power button click handler
         print("Power button clicked!")
+        # sys.exit()
+        self.powerBackground.show()
+        self.powerOptions.show()
+        self.powerBackground.raise_()
+        self.powerOptions.raise_()
+        
+    def handlePowerCancel(self):
+        print("Power Options Hidden")
+        self.powerBackground.hide()
+        self.powerOptions.hide()
+    
+    def handleShutDown(self):
+        print("Shutting Down")
+        self.powerBackground.hide()
+        self.powerOptions.hide()
+        sys.exit()
+        
+    def handleRestart(self):
+        print("Restarting")
+        self.powerBackground.hide()
+        self.powerOptions.hide()
         sys.exit()
 
 def main():
