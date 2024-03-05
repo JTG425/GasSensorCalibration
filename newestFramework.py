@@ -1,4 +1,4 @@
-import sys
+import os, sys
 import time
 import random
 from PyQt6 import *
@@ -113,6 +113,7 @@ class HMIWindow(QWidget):
         self.screensaver.move(QPoint(0,0))
         self.screensaver.show()
         self.screensaver.clicked.connect(self.handleScreensaver)
+        self.makeBubbles(self.screensaver)
         
         self.sidebar.move(QPoint(-10,-10))
         self.sidebar.hide()
@@ -331,6 +332,32 @@ class HMIWindow(QWidget):
         self.saverCounter = 0
         self.toggleSaver.start(1000)
         
+    def makeBubbles(self, screensaver):
+        for i in range(0, 50):
+            bubble = QFrame(screensaver)
+            bubble.setFixedSize(50, 50)
+            bubbleColor = 'rgba(255,255,255,0.25)'
+            bubble.setStyleSheet(
+                f"background-color: {bubbleColor};"
+                f"border-radius: 25px;"
+            )
+            bubble.move(QPoint(random.randint(0, self.screen.width()), random.randint(0, self.screen.height())))
+            bubble.show()
+            bubble.raise_()
+            self.animateBubble(bubble)
+            
+    def animateBubble(self, bubble):
+        bubbleAnimation = QPropertyAnimation(bubble, b"pos")
+        bubbleAnimation.setDuration(1000)
+        bubbleAnimation.setStartValue(QPoint(bubble.pos().x(), bubble.pos().y()))
+        newX = bubble.pos().x() + random.randint(-100, 100)
+        newY = bubble.pos().y() + random.randint(-100, 100)
+        bubbleAnimation.setEndValue(QPoint(newX, newY))
+        bubbleAnimation.start()
+            
+        
+        
+        
         
 
     def updateScreenSaverTime(self):
@@ -498,7 +525,8 @@ class HMIWindow(QWidget):
         # After Graphing is done
         self.saverCounter = 0
         self.toggleSaver.start(1000)
-        
+      
+    # Working :)  
     def onPowerButtonClick(self):
         # Power button click handler
         print("Power button clicked!")
@@ -509,11 +537,14 @@ class HMIWindow(QWidget):
         self.powerBackground.raise_()
         self.powerOptions.raise_()
         
+        
+    # Working :)
     def handlePowerCancel(self):
         print("Power Options Hidden")
         self.powerBackground.hide()
         self.powerOptions.hide()
         
+    # Working :)
     def handlePowerSleep(self):
         print("Sleeping")
         self.powerBackground.hide()
@@ -521,12 +552,15 @@ class HMIWindow(QWidget):
         self.eventButton.setDisabled(True)
         self.screensaver.show()
     
+    # Working :)
     def handleShutDown(self):
         print("Shutting Down")
         self.powerBackground.hide()
         self.powerOptions.hide()
         sys.exit()
         
+        
+    # Restart the Python Script (Not Working)
     def handleRestart(self):
         print("Restarting")
         self.powerBackground.hide()
