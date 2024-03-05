@@ -45,17 +45,17 @@ warningColor = "#780606"
 
 def read_event_count(filename, line_number):
     with open(filename, 'r') as file:
-        for current_line, content in enumerate(file, 1):  # Start counting from 1
+        for current_line, content in enumerate(file, 1):
             if current_line == line_number:
-                return content.strip()  # Strip to remove any leading/trailing whitespace and newline characters
-    return None  # Return None if the specified line_number does not exist
+                return content.strip()  # Strip to remove any leading/trailing whitespace
+    return None 
 
 def read_event(filename, line_number):
-    lines = []  # List to store the lines
+    lines = [] 
     with open(filename, 'r') as file:
         for current_line, content in enumerate(file, 1): 
             if current_line >= line_number:
-                lines.append(content.strip())  # Append the line to the list
+                lines.append(content.strip()) 
                 if len(lines) == 5:  # Stop after reading 5 lines
                     break
     return lines if lines else None  # Return the list of lines if not empty, else return None
@@ -95,10 +95,10 @@ class EventLog(QWidget):
         self.scrollContent.setContentsMargins(10,100,10,10)
         self.scrollArea.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignHCenter)
         self.raise_()
+        
         # Enable Touch Scrolling on the Scroll Area
         QScroller.grabGesture(self.scrollArea.viewport(), QScroller.ScrollerGestureType.TouchGesture)
         
-        # Example content in the sidebar
         self.title = QLabel("Event Log", self.scrollContent)
         self.title.setStyleSheet(
             "font-size: 48px;"
@@ -116,7 +116,6 @@ class EventLog(QWidget):
             events[event_key] = read_event('./logs/events.txt', i * 5 + offset)
             offset = offset + 1
             frames[event_key] = QPushButton(self.scrollContent)
-            #frames[event_key].setFixedSize(screen.width()-600, 150)
             frames[event_key].setStyleSheet(
                 f"background: {eventLogBackground};"
                 f"color: {m_s_buttonText};"
