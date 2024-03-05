@@ -146,10 +146,10 @@ class HMIWindow(QWidget):
         self.powerButton.move(QPoint(-self.sidebar.width(),10))
         
         self.powerOptions = QFrame(self)
-        self.powerOptions.setFixedSize(600, 400)
+        self.powerOptions.setFixedSize(600, 500)
         width = int(self.screen.width() / 2)
         height = int(self.screen.height() / 2)
-        self.powerOptions.move(QPoint(width-275, height - 200))
+        self.powerOptions.move(QPoint(width-300, height - 250))
         self.powerOptions.setStyleSheet(
             f"background-color: white;"
             "border: 1px solid #3b4045;"
@@ -173,6 +173,10 @@ class HMIWindow(QWidget):
         self.cancelButton.setFixedSize(550, 100)
         self.cancelButton.clicked.connect(self.handlePowerCancel)
         
+        self.sleepButton = QPushButton("Sleep", self.powerOptions)
+        self.sleepButton.setFixedSize(550, 100)
+        self.sleepButton.clicked.connect(self.handlePowerSleep)
+        
         self.shutDownButton = QPushButton("Shut Down", self.powerOptions)
         self.shutDownButton.setFixedSize(550, 100)
         self.shutDownButton.clicked.connect(self.handleShutDown)
@@ -183,7 +187,8 @@ class HMIWindow(QWidget):
 
         
         self.powerOptions.layout().setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.powerOptions.layout().addWidget(self.cancelButton)        
+        self.powerOptions.layout().addWidget(self.cancelButton)
+        self.powerOptions.layout().addWidget(self.sleepButton)        
         self.powerOptions.layout().addWidget(self.shutDownButton)
         self.powerOptions.layout().addWidget(self.restartButton)
 
@@ -280,6 +285,15 @@ class HMIWindow(QWidget):
             "padding: 10px;"
             "border-radius: 5px;"
         )
+        
+        self.sleepButton.setStyleSheet(
+            f"color: {m_s_buttonText};"
+            f"background-color: {buttonColor};"
+            f"border: 1px solid {borders};"
+            "font-size: 24px;"
+            "padding: 10px;"
+            "border-radius: 5px;"
+        )
         self.shutDownButton.setStyleSheet(
             f"color: white;"
             f"background-color: {abortButtonColor};"
@@ -313,6 +327,7 @@ class HMIWindow(QWidget):
     def handleScreensaver(self):
         # When Screen is clicked, the main screen shows
         self.screensaver.hide()
+        self.eventButton.setDisabled(False)
         self.saverCounter = 0
         self.toggleSaver.start(1000)
         
@@ -488,6 +503,7 @@ class HMIWindow(QWidget):
         # Power button click handler
         print("Power button clicked!")
         # sys.exit()
+        self.toggleEventLog()
         self.powerBackground.show()
         self.powerOptions.show()
         self.powerBackground.raise_()
@@ -497,6 +513,13 @@ class HMIWindow(QWidget):
         print("Power Options Hidden")
         self.powerBackground.hide()
         self.powerOptions.hide()
+        
+    def handlePowerSleep(self):
+        print("Sleeping")
+        self.powerBackground.hide()
+        self.powerOptions.hide()
+        self.eventButton.setDisabled(True)
+        self.screensaver.show()
     
     def handleShutDown(self):
         print("Shutting Down")
