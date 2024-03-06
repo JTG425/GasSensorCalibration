@@ -10,6 +10,8 @@ class MakeGraph(QWidget):
     graphLine = "#063e78"
     borders = "#3b4045"
     
+    # LABVIEW - Higgins
+    
     time = {}  # Time points
     data = {}  # Data points
     eventTime = {}  # Event Time Points

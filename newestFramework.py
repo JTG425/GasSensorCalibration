@@ -113,7 +113,6 @@ class HMIWindow(QWidget):
         self.screensaver.move(QPoint(0,0))
         self.screensaver.show()
         self.screensaver.clicked.connect(self.handleScreensaver)
-        self.makeBubbles(self.screensaver)
         
         self.sidebar.move(QPoint(-10,-10))
         self.sidebar.hide()
@@ -332,43 +331,10 @@ class HMIWindow(QWidget):
         self.saverCounter = 0
         self.toggleSaver.start(1000)
         
-    def makeBubbles(self, screensaver):
-        self.bubbleGroup = QSequentialAnimationGroup()
-        for i in range(0, 50):
-            bubble = QLabel(screensaver)  # Use QLabel for better control over the styling
-            bubble.setFixedSize(50, 50)
-            bubbleColor = "rgba(255,255,255,0.25)"
-            bubble.setStyleSheet(
-                f"background-color: {bubbleColor};"
-                f"border-radius: 25px;"
-            )
-            bubble.move(QPoint(random.randint(0, self.screen.width()), random.randint(0, self.screen.height())))
-            bubble.show()
-
-            animation = self.animateBubble(bubble)
-            self.bubbleGroup.addAnimation(animation)
-
-        self.bubbleGroup.start()
-
-    def animateBubble(self, bubble):
-        bubbleAnimation = QPropertyAnimation(bubble, b"pos")
-        bubbleAnimation.setDuration(100000)
-
-        def updateAnimation():
-            newX = bubble.x() + random.randint(-1000, 1000)
-            newY = bubble.y() + random.randint(-1000, 1000)
-            bubbleAnimation.setEndValue(QPoint(newX, newY))
-            bubbleAnimation.start() 
-
-        bubbleAnimation.finished.connect(updateAnimation)
-        updateAnimation()
-
-        return bubbleAnimation
             
         
         
-        
-        
+    
 
     def updateScreenSaverTime(self):
         # Update the time on the screen saver
