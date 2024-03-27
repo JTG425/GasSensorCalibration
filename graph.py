@@ -4,6 +4,7 @@ from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QFont
 import pyqtgraph as pg
 import time
+from datetime import datetime
 
 class MakeGraph(QWidget):
     graphBackground = "#232629"
@@ -17,6 +18,13 @@ class MakeGraph(QWidget):
     eventTime = {}  # Event Time Points
     eventData = {}  # Event Data Points
     sensor_address = 0x50
+    timeNow = datetime.now()
+    
+    dateForLog = timeNow.strftime("%m-%d-%Y")
+    timeForLog = 0
+    maxPPMForLog = 0
+    warningsForLog = 'No Warnings'
+    ppmValuesForLog = []
 
     
     def __init__(self, parent=None):
@@ -94,9 +102,6 @@ class MakeGraph(QWidget):
         for i in range(1, 10):
             self.time[i] = i
             self.data[i] = i^2
-        with open('logs/events.txt', 'a') as file:
-            for key in self.time.keys():
-                file.write(f"{key},{self.data[key]} ")
         
         
         self.showLiveGraph()
@@ -155,7 +160,12 @@ class MakeGraph(QWidget):
                     
                 self.counter += 1
             else:
+                self.timeForLog = self.counter
+                self.maxPPMForLog = max(self.data.values())
+                self.warningsForLog = 'No Warnings'
+                self.ppmValuesForLog = list(self.data.values())
                 self.timer.stop()
+                self.writeToLog(self.dateForLog, self.timeForLog, self.maxPPMForLog, self.warningsForLog, self.ppmValuesForLog)
         else:
             return
         
@@ -202,3 +212,7 @@ class MakeGraph(QWidget):
         else:
             self.eventTimer.stop()  # Stop the timer after all points are plotted
 
+    def writeToLog(self, date, time, maxPPM, warnings, ppmValues):
+        with open(f'logs/eventCount.txt',  )
+        with open(f'logs/events.txt', 'a') as file:
+            file.write(f"\n{date}\n{time}\n{maxPPM}\n{warnings}\n{ppmValues}\n")
