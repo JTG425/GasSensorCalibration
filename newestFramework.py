@@ -37,10 +37,10 @@ screensaver3 = 'rgba(58,102,201,0.9)'
 
 
 buttonColor = "#0857a9"
-m_s_buttonText = "#84bdf9"
-warningText = "#f9f984"
-standbyText = "#84f984"
-errorText = "#f98484"
+m_s_buttonText = "#ffffff"
+warningText = "#ffffff"
+standbyText = "#ffffff"
+errorText = "#ffffff"
 abortButtonColor = "#a30309"
 graphBackground = "#232629"
 graphLine = "#063e78"
@@ -236,7 +236,6 @@ class HMIWindow(QWidget):
         self.eventButton.setStyleSheet(
             f"color: {m_s_buttonText};" 
             f"background-color: {buttonColor};" 
-            f"color: {m_s_buttonText};" 
             f"border: 1px solid {borders};"
             "font-size: 24px;"
             "padding: 10px;"  
@@ -245,7 +244,6 @@ class HMIWindow(QWidget):
         self.abortButton.setStyleSheet(
             f"color: white;"
             f"background-color: {abortButtonColor};" 
-            f"color: {m_s_buttonText};" 
             f"border: 1px solid {borders};"
             "font-size: 24px;"
             "padding: 10px;"  
@@ -254,7 +252,6 @@ class HMIWindow(QWidget):
         self.startButton.setStyleSheet(
             f"color: {m_s_buttonText};" 
             f"background-color: {buttonColor};" 
-            f"color: {m_s_buttonText};" 
             f"border: 1px solid {borders};"
             "font-size: 24px;"
             "padding: 10px;"  
@@ -263,7 +260,6 @@ class HMIWindow(QWidget):
         self.disposeButton.setStyleSheet(
             f"color: {m_s_buttonText};" 
             f"background-color: {buttonColor};" 
-            f"color: {m_s_buttonText};" 
             f"border: 1px solid {borders};" 
             "font-size: 24px;"
             "padding: 10px;" 

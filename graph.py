@@ -31,7 +31,10 @@ class MakeGraph(QWidget):
         super(MakeGraph, self).__init__(parent)
         self.eventTimeValue = None
         self.showLive = True
+        self.finished = False
         self.disposal = False
+        self.leak = False
+        self.abort = False
         self.eventDataValues = {}
         self.eventDateValue = None
         
@@ -62,21 +65,23 @@ class MakeGraph(QWidget):
         self.graphWidget = pg.PlotWidget()
         self.graphFrameLayout.addWidget(self.graphWidget)  # Add the graphWidget to the graphFrame's layout
         self.graphFrameLayout.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Align the graphWidget to the center
+        self.graphWidget.getPlotItem().layout.setContentsMargins(0, 0, 0, 25)  # Left, Top, Right, Bottom margins
 
         self.graphWidget.setBackground(self.graphBackground)
         self.graphWidget.setFixedWidth(1024)
         self.graphWidget.showGrid(x=True, y=True)
-        self.graphWidget.setTitle('<span style="font-size: 24pt">Concentration In PPM</span>', color='w')
+        self.graphWidget.setTitle('<span style="font-size: 32pt">Concentration In PPM</span>', color='w')
         
         # Increase the font size for axis labels
         axisFont = QFont()
         axisFont.setPixelSize(24)  # Set the desired font size
         self.graphWidget.getPlotItem().getAxis('left').setTickFont(axisFont)
         self.graphWidget.getPlotItem().getAxis('bottom').setTickFont(axisFont)
-        self.graphWidget.setLabel('left', 'PPM', **{'font-size': '24pt'},  **{'color': 'w'})
-        self.graphWidget.setLabel('bottom', 'Time (s)', **{'font-size': '24pt'},  **{'color': 'w'})
+        
+        self.graphWidget.setLabel('left', 'PPM', **{'font-size': '32pt'} , **{'color': '#ffffff'})
+        self.graphWidget.setLabel('bottom', 'Time (s)', **{'font-size': '32pt'},  **{'color': '#ffffff'})
 
-        self.graphWidget.getPlotItem().layout.setContentsMargins(0, 0, 0, 25)  # Left, Top, Right, Bottom margins
+
         
         
         layout.addWidget(self.graphFrame)  # Add the graphFrame to the main layout
@@ -86,6 +91,7 @@ class MakeGraph(QWidget):
         
     def handleAbort(self):
         print("Abort button pressed")
+        self.abort = True
         self.showLive = False
         self.timer.stop()
         self.graphWidget.clear()
@@ -139,6 +145,7 @@ class MakeGraph(QWidget):
     
     def tempDisposal(self):
         print("creating disposal graph")
+            
         if self.disposal:
             print("Disposal mode activated")
             lastPPM = self.data[self.counter - 1]
@@ -147,12 +154,16 @@ class MakeGraph(QWidget):
                 self.data[i] = lastPPM - (i - self.counter)
                 if self.data[i] < 0:
                     self.data[i] = 0
+                    self.timer.stop()
                     
             self.timer.start(1000)
         
         
     def updateLiveGraph(self):
         if self.showLive:
+            if self.counter < len(self.time) and self.disposal == True:
+                self.leak = True
+                
             if self.counter < len(self.time):
                 time_keys = list(self.time.keys())[:self.counter + 1]
                 data_values = [self.data[key] for key in time_keys]
@@ -160,13 +171,18 @@ class MakeGraph(QWidget):
                     
                 self.counter += 1
             else:
-                self.timeForLog = self.counter
-                self.maxPPMForLog = max(self.data.values())
-                self.warningsForLog = 'No Warnings'
-                self.ppmValuesForLog = list(self.data.values())
                 self.timer.stop()
-                self.writeToLog(self.dateForLog, self.timeForLog, self.maxPPMForLog, self.warningsForLog, self.ppmValuesForLog)
+
         else:
+            self.timeForLog = self.counter
+            self.maxPPMForLog = max(self.data.values())   
+            self.finished = self.counter == len(self.time)
+            if self.leak == True:
+                self.warningsForLog = 'Leak Detected'
+            else:
+                self.warningsForLog = 'No Warnings'    
+            self.ppmValuesForLog = list(self.data.values())
+            self.writeToLog(self.dateForLog, self.timeForLog, self.maxPPMForLog, self.warningsForLog, self.ppmValuesForLog)
             return
         
     def handleEventClicked(self):
@@ -211,8 +227,15 @@ class MakeGraph(QWidget):
             self.eventCounter += 1
         else:
             self.eventTimer.stop()  # Stop the timer after all points are plotted
+            
+
 
     def writeToLog(self, date, time, maxPPM, warnings, ppmValues):
-        with open(f'logs/eventCount.txt',  )
+        with open(f'logs/eventCount.txt', 'r') as file:
+            count = int(file.read())
+            count += 1
+            with open(f'logs/eventCount.txt', 'w') as file:
+                file.write(str(count))
+                
         with open(f'logs/events.txt', 'a') as file:
             file.write(f"\n{date}\n{time}\n{maxPPM}\n{warnings}\n{ppmValues}\n")
