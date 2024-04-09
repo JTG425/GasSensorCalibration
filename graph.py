@@ -25,6 +25,7 @@ class MakeGraph(QWidget):
     maxPPMForLog = 0
     warningsForLog = 'No Warnings'
     ppmValuesForLog = []
+    leakTimeStamp = 0
 
     
     def __init__(self, parent=None):
@@ -80,10 +81,6 @@ class MakeGraph(QWidget):
         
         self.graphWidget.setLabel('left', 'PPM', **{'font-size': '32pt'} , **{'color': '#ffffff'})
         self.graphWidget.setLabel('bottom', 'Time (s)', **{'font-size': '32pt'},  **{'color': '#ffffff'})
-
-
-        
-        
         layout.addWidget(self.graphFrame)  # Add the graphFrame to the main layout
             
     def showStandByGraph(self):
@@ -107,7 +104,7 @@ class MakeGraph(QWidget):
         self.showLive = True
         for i in range(1, 10):
             self.time[i] = i
-            self.data[i] = i^2
+            self.data[i] = 0
         
         
         self.showLiveGraph()
@@ -163,6 +160,7 @@ class MakeGraph(QWidget):
         if self.showLive:
             if self.counter < len(self.time) and self.disposal == True:
                 self.leak = True
+                self.leakTimeStamp = self.counter
                 
             if self.counter < len(self.time):
                 time_keys = list(self.time.keys())[:self.counter + 1]
@@ -230,12 +228,12 @@ class MakeGraph(QWidget):
             
 
 
-    def writeToLog(self, date, time, maxPPM, warnings, ppmValues):
+    def writeToLog(self, date, time, maxPPM, warnings, warningStamp, ppmValues):
         with open(f'logs/eventCount.txt', 'r') as file:
             count = int(file.read())
             count += 1
             with open(f'logs/eventCount.txt', 'w') as file:
                 file.write(str(count))
-                
+        
         with open(f'logs/events.txt', 'a') as file:
             file.write(f"\n{date}\n{time}\n{maxPPM}\n{warnings}\n{ppmValues}\n")

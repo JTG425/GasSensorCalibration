@@ -192,7 +192,6 @@ class HMIWindow(QWidget):
         self.powerOptions.layout().addWidget(self.shutDownButton)
         self.powerOptions.layout().addWidget(self.restartButton)
 
-    
         
 
         # Event Log button at row 0, column 0, spanning 2x2
