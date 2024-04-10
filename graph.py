@@ -3,31 +3,30 @@ from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QFrame
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QFont
 import pyqtgraph as pg
+# import smbus
 import time
 from datetime import datetime
+
 
 class MakeGraph(QWidget):
     graphBackground = "#232629"
     graphLine = "#063e78"
     borders = "#3b4045"
-    
-    # LABVIEW - Higgins
-    
-    time = {}  # Time points
-    data = {}  # Data points
-    eventTime = {}  # Event Time Points
-    eventData = {}  # Event Data Points
-    sensor_address = 0x50
+   
+    eventTime = []  # Event Time Points
+    eventData = []  # Event Data Points
     timeNow = datetime.now()
-    
+    counter = 0
+   
     dateForLog = timeNow.strftime("%m-%d-%Y")
     timeForLog = 0
     maxPPMForLog = 0
     warningsForLog = 'No Warnings'
     ppmValuesForLog = []
     leakTimeStamp = 0
+   
 
-    
+   
     def __init__(self, parent=None):
         super(MakeGraph, self).__init__(parent)
         self.eventTimeValue = None
@@ -38,18 +37,23 @@ class MakeGraph(QWidget):
         self.abort = False
         self.eventDataValues = {}
         self.eventDateValue = None
-        
-        self.timer = QTimer(self)  # QTimer to update the graph
-        self.timer.timeout.connect(self.updateLiveGraph)
-        
+       
+        # False: Running On PI With Sensor
+        # True: Running On Computer Without Sensor
+        self.simulation = True
+       
+       
+        self.data = []
+        self.simulatedData = [1.27, 1.278, 1.363, 1.363, 1.449, 1.518, 1.627, 1.694, 1.731, 1.864, 2.053, 2.053, 2.21, 2.292, 2.292, 2.434, 2.629, 2.802, 2.802, 2.932, 3.054, 3.054, 3.215, 3.347, 3.347, 3.582, 3.702, 3.915, 3.915, 4.343, 4.692, 4.692, 5.435, 6.163, 6.163, 6.61, 6.89, 7.049, 7.049, 7.414, 7.874, 7.874, 8.65, 4.877, 4.877, 2.508, 1.795, 1.482, 1.482, 1.412, 1.244, 1.244, 1.202, 1.038, 1.173, 1.173, 1.096, 1.096, 1.109]
+        self.time = []
         self.counter = 0
-        self.eventCounter = 0
+       
         self.operation = "standby"
         self.initUI()
 
-        
+       
     def initUI(self):
-        layout = QVBoxLayout(self) 
+        layout = QVBoxLayout(self)
         self.graphFrame = QFrame()
         self.graphFrame.setFrameShape(QFrame.Shape.StyledPanel)
         self.graphFrame.setFrameShadow(QFrame.Shadow.Raised)
@@ -58,7 +62,7 @@ class MakeGraph(QWidget):
             f"border: 1px solid {self.borders};"
             "padding: 10px;"
         )
-    
+   
         # Create a layout for the graphFrame
         self.graphFrameLayout = QVBoxLayout(self.graphFrame)  
         self.graphFrame.setLayout(self.graphFrameLayout)
@@ -72,77 +76,100 @@ class MakeGraph(QWidget):
         self.graphWidget.setFixedWidth(1024)
         self.graphWidget.showGrid(x=True, y=True)
         self.graphWidget.setTitle('<span style="font-size: 32pt">Concentration In PPM</span>', color='w')
-        
+        self.data_line = self.graphWidget.plot(self.data, self.time, pen=pg.mkPen(self.graphLine, width=8))
+       
         # Increase the font size for axis labels
         axisFont = QFont()
         axisFont.setPixelSize(24)  # Set the desired font size
         self.graphWidget.getPlotItem().getAxis('left').setTickFont(axisFont)
         self.graphWidget.getPlotItem().getAxis('bottom').setTickFont(axisFont)
-        
+       
         self.graphWidget.setLabel('left', 'PPM', **{'font-size': '32pt'} , **{'color': '#ffffff'})
         self.graphWidget.setLabel('bottom', 'Time (s)', **{'font-size': '32pt'},  **{'color': '#ffffff'})
         layout.addWidget(self.graphFrame)  # Add the graphFrame to the main layout
-            
+           
     def showStandByGraph(self):
         print("Standby mode activated")
-        
+       
+       
+    def validate_checksum(self, data_bytes, received_checksum):
+        # Calculate the 256-modulo (8-bit) sum of the data bytes
+        data_sum = sum(data_bytes) % 256
+        # Calculate the checksum: 0x01 + ~(sum)
+        calculated_checksum = (0x01 + (~data_sum & 0xFF)) & 0xFF
+        # Check if the checksum + sum equals 0x00
+        return (calculated_checksum + data_sum) & 0xFF == 0x00
+       
+    def read_sensor_data(self, bus, sensor_address):
+
+        data_bytes = bus.read_block_data(sensor_address, 3)
+   
+        # Used For Checksum
+        crc = data_bytes[0]
+   
+        # Extract calibrated sensor data (Big-Endian format)
+        calibrated_data_msb = data_bytes[1]
+        calibrated_data_lsb = data_bytes[2]
+        calibrated_sensor_value = (calibrated_data_msb << 8) | calibrated_data_lsb
+
+
+        # Validate the data using the checksum
+        if self.validate_checksum(data_bytes[1:], crc):
+            return calibrated_sensor_value
+        else:
+            print("Checksum mismatch")
+            return None
+           
+    # def handleSensorRead(self, bus, sensor_address):  
+    #     sensor_value = self.read_sensor_data(bus, sensor_address) # Real
+    #     if sensor_value is not None:
+    #         self.data.append(sensor_value)
+    #         self.time.append(self.counter)
+    #         self.counter += 1
+    #         self.plotSensorData()
+           
+    def simulateSensorData(self):
+        simulated_value = self.simulatedData[self.counter]
+        self.data.append(simulated_value)
+        self.time.append(self.counter)
+        self.counter += 1
+        self.plotSensorData()
+           
+   
+    def handleStart(self):
+        self.sensorTimer = QTimer(self)
+        if not self.simulation:
+            self.sensorTimer = QTimer(self)
+            # Initialize I2C (SMbus)
+            #bus = smbus.SMBus(1)
+   
+            # Sensor I2C Address
+            sensor_address = 0x50
+            #self.sensorTimer.timeout.connect(lambda: self.handleSensorRead(bus, sensor_address))
+        else:
+            self.sensorTimer.timeout.connect(self.simulateSensorData)
+
+        self.sensorTimer.start(1000)
+       
     def handleAbort(self):
         print("Abort button pressed")
         self.abort = True
         self.showLive = False
-        self.timer.stop()
+        self.sensorTimer.stop()
         self.graphWidget.clear()
         self.counter = 0
          
-        
-    # This Function Will Be where the sensor Input will be processed.
-    # For now, it will be a temporary function to test the graph.
-    # It should also Write the data to a file for future Event Log Use.
-    def tempLiveData(self):
-        self.graphWidget.clear()
-        self.counter = 0
-        self.showLive = True
-        for i in range(1, 10):
-            self.time[i] = i
-            self.data[i] = 0
-        
-        
-        self.showLiveGraph()
-        
-        
-        
-    # This Function Will Recieve Data from the sensor and update the graph
-    # def recieveSensorData(self, time, data):
-    #     self.graphWidget.clear()
 
-
-        
-            
-    def showLiveGraph(self):
-        if self.showLive and self.disposal == False:
-            # sensor_value = data[0] << 8 | data[1]
-            # self.data[self.counter] = sensor_value
-            # self.time[self.counter] = self.counter
-            self.timer.start(1000)  # Start the timer with 1-second intervals
-            # self.updateLiveGraph()
-            print("Live graph shown")
-            self.counter += 1
-        elif self.disposal == True:
-            print("calling Disposal")
-            self.timer.stop()
-            self.tempDisposal()
-        else:
-            self.timer.stop()
-            
+           
     def handleDisposalClick(self):
         print("Disposal button pressed")
         self.disposal = True
         self.showLiveGraph()    
-        
-    
+       
+   
     def tempDisposal(self):
         print("creating disposal graph")
-            
+           
         if self.disposal:
             print("Disposal mode activated")
             lastPPM = self.data[self.counter - 1]
@@ -152,47 +179,21 @@ class MakeGraph(QWidget):
                 if self.data[i] < 0:
                     self.data[i] = 0
                     self.timer.stop()
-                    
+                   
             self.timer.start(1000)
-        
-        
-    def updateLiveGraph(self):
-        if self.showLive:
-            if self.counter < len(self.time) and self.disposal == True:
-                self.leak = True
-                self.leakTimeStamp = self.counter
-                
-            if self.counter < len(self.time):
-                time_keys = list(self.time.keys())[:self.counter + 1]
-                data_values = [self.data[key] for key in time_keys]
-                self.graphWidget.plot(time_keys, data_values, pen=pg.mkPen(self.graphLine, width=8))
-                    
-                self.counter += 1
-            else:
-                self.timer.stop()
-
-        else:
-            self.timeForLog = self.counter
-            self.maxPPMForLog = max(self.data.values())   
-            self.finished = self.counter == len(self.time)
-            if self.leak == True:
-                self.warningsForLog = 'Leak Detected'
-            else:
-                self.warningsForLog = 'No Warnings'    
-            self.ppmValuesForLog = list(self.data.values())
-            self.writeToLog(self.dateForLog, self.timeForLog, self.maxPPMForLog, self.warningsForLog, self.ppmValuesForLog)
-            return
-        
+           
+           
+    def plotSensorData(self):
+        self.data_line.setData(self.time, self.data)
+       
+       
     def handleEventClicked(self):
         print("Event button pressed")
         self.showLive = False
-        self.timer.stop()
-            
+        self.sensorTimer.stop()
+           
         self.graphWidget.clear()
         self.counter = 0
-        self.eventCounter = 0
-        self.eventTimer = QTimer(self)
-        self.eventTimer.timeout.connect(self.updateEventGraph)
         self.showEventLog()
 
     def setEventTime(self, time):
@@ -200,32 +201,23 @@ class MakeGraph(QWidget):
 
     def setEventData(self, data):
         self.eventDataValues = data
-    
+   
     def setEventDate(self, date):
         self.eventDateValue = date
 
     def showEventLog(self):
         self.graphWidget.setTitle(f'<span style="font-size: 24pt">Calibration Performed on {self.eventDateValue}</span>', color='w')
-        
+       
         if self.eventTimeValue is None or self.eventDataValues == [] or self.eventDateValue is None:
             print("No data to show")
         else:
             for i in range(self.eventTimeValue):
                 self.eventTime[i] = i
-                self.eventData[i] = self.eventDataValues[i]   
-            print(self.eventData)
-            self.eventTimer.start(100)  # Update The Plot every 100ms
+                self.eventData[i] = self.eventDataValues[i]  
             print(f"{self.eventDateValue} Data Plotting...")
-            
-    def updateEventGraph(self):
-        if self.eventCounter < len(self.eventTime):
-            time_keys2 = list(self.eventTime.keys())[:self.eventCounter + 1]
-            data_values2 = [self.eventData[key] for key in time_keys2]
-            self.graphWidget.plot(time_keys2, data_values2, pen=pg.mkPen(self.graphLine, width=8))
-            self.eventCounter += 1
-        else:
-            self.eventTimer.stop()  # Stop the timer after all points are plotted
-            
+            self.data_line.setData(self.eventTime, self.eventData)
+
+           
 
 
     def writeToLog(self, date, time, maxPPM, warnings, warningStamp, ppmValues):
@@ -234,6 +226,6 @@ class MakeGraph(QWidget):
             count += 1
             with open(f'logs/eventCount.txt', 'w') as file:
                 file.write(str(count))
-        
+       
         with open(f'logs/events.txt', 'a') as file:
             file.write(f"\n{date}\n{time}\n{maxPPM}\n{warnings}\n{ppmValues}\n")

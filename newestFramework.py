@@ -461,7 +461,6 @@ class HMIWindow(QWidget):
         self.eventButton.raise_()
 
   
-        
 
 
     def onStartButtonClick(self):
@@ -472,7 +471,7 @@ class HMIWindow(QWidget):
         print("Start button clicked!")
         self.handleStatusChange("In Progress")
         self.abortButton.setDisabled(False)
-        self.graph.tempLiveData()
+        self.graph.handleStart()
         
         # After Graphing is done
         self.saverCounter = 0
