@@ -1,10 +1,10 @@
 import os, sys
 import time
 import random
-from PyQt6 import *
-from PyQt6.QtWidgets import *
-from PyQt6.QtCore import *
-from PyQt6.QtGui import *
+from PyQt6 import QtCore, QtGui, QtWidgets
+from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, QScrollArea, QFrame, QScroller, QGridLayout
+from PyQt6.QtCore import Qt, QTimer, QPoint
+from PyQt6.QtGui import QColor, QPalette, QScreen
 from datetime import datetime
 from eventLog import EventLog
 from graph import MakeGraph
