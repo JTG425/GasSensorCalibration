@@ -137,6 +137,6 @@ class EventLog(QWidget):
             frames[event_key].clicked.connect(lambda checked, eventId=i: self.eventDate.emit(events[f"event_{eventId}"][0]))
             
             # Sends List of Calibration Data to Graph.py For use as the y axis
-            frames[event_key].clicked.connect(lambda checked, eventId=i: self.eventData.emit(events[f"event_{eventId}"][4].split()))
+            frames[event_key].clicked.connect(lambda checked, eventId=i: self.eventData.emit(events[f"event_{eventId}"][4]))
             
 

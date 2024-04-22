@@ -455,7 +455,7 @@ class HMIWindow(QWidget):
         self.toggleSaver.start(1000)
         
     def handleDisposalDone(self):
-        if self.disposalDoneCounter == 10:
+        if self.disposalDoneCounter == 20:
             self.handleStatusChange("Standby")
             self.simulateDisposalDone.stop()
         self.disposalDoneCounter = self.disposalDoneCounter + 1

@@ -75,7 +75,6 @@ class MakeGraph(QWidget):
         self.graphWidget.getPlotItem().layout.setContentsMargins(0, 0, 0, 25)  # Left, Top, Right, Bottom margins
 
         self.graphWidget.setBackground(self.graphBackground)
-        self.graphWidget.setFixedWidth(1024)
         self.graphWidget.showGrid(x=True, y=True)
         self.graphWidget.setTitle('<span style="font-size: 32pt">Concentration In PPM</span>', color='w')
         self.data_line = self.graphWidget.plot(self.data, self.time, pen=pg.mkPen(self.graphLine, width=8))
@@ -196,16 +195,17 @@ class MakeGraph(QWidget):
        
     def handleEventClicked(self):
         print("Event button pressed")
-        
         self.showEventLog()
 
     def setEventTime(self, time):
         self.eventTimeValue = time
+        if time is not None:
+            for i in range(self.eventTimeValue):
+                self.eventTime.append(i)
 
     def setEventData(self, data):
-        self.eventDataValues = data
+        self.eventData = data
         
-   
     def setEventDate(self, date):
         self.eventDateValue = date
 
@@ -215,8 +215,8 @@ class MakeGraph(QWidget):
         if self.eventTimeValue is None or self.eventDataValues == [] or self.eventDateValue is None:
             print("No data to show")
         else:
-            self.eventTime = self.eventTimeValue
-            self.eventData = self.eventDataValues
+            print(self.eventTime)
+            print(self.eventData)
             self.data_line.setData(self.eventTime, self.eventData)
             self.graphWidget.setLabel('left', 'PPM', **{'font-size': '24pt'} , **{'color': '#ffffff'})
             self.graphWidget.setLabel('bottom', 'Time (s)', **{'font-size': '24pt'},  **{'color': '#ffffff'})
