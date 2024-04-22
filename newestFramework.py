@@ -362,7 +362,7 @@ class HMIWindow(QWidget):
                 "padding: 10px;" 
                 "color: white;"
             )
-        elif status == "Disposal In Progress":
+        elif status == "Calibration Complete, Open Disposal Valve":
              self.statusLabel.setStyleSheet(
                 f"font-size: 40px;" 
                 f"border: 1px solid {borders};" 
@@ -399,6 +399,17 @@ class HMIWindow(QWidget):
                 "color: {standbyText};"
             )
             self.statusLabel.setText(f"Status: Standby")
+            
+        elif status == "Disposal In Progress":
+            self.statusLabel.setStyleSheet(
+                f"font-size: 40px;" 
+                f"border: 1px solid {borders};" 
+                f"border-radius: 5px;" 
+                f"background-color: {inProgressColor};"
+                "padding: 10px;" 
+                "color: white;"
+            )
+            self.statusLabel.setText(f"Status: Disposal In Progress")
                        
         else:
             self.statusLabel.setStyleSheet(
@@ -433,9 +444,21 @@ class HMIWindow(QWidget):
         # Call Disposal Handler In Graph
         self.graph.handleDisposalClick()
         
+        self.disposalDoneCounter = 0
+        
+        self.simulateDisposalDone = QTimer(self)
+        self.simulateDisposalDone.timeout.connect(self.handleDisposalDone)
+        self.simulateDisposalDone.start(1000)
+        
         # After Disposal is done
         self.saverCounter = 0
         self.toggleSaver.start(1000)
+        
+    def handleDisposalDone(self):
+        if self.disposalDoneCounter == 10:
+            self.handleStatusChange("Standby")
+            self.simulateDisposalDone.stop()
+        self.disposalDoneCounter = self.disposalDoneCounter + 1
 
 
     def toggleEventLog(self):
@@ -473,9 +496,22 @@ class HMIWindow(QWidget):
         self.abortButton.setDisabled(False)
         self.graph.handleStart()
         
+        self.simulationCounter = 0
+        self.simulationTimer = QTimer(self)
+        self.simulationTimer.timeout.connect(self.simulateDisposalTrigger)
+        self.simulationTimer.start(1000)
+        
         # After Graphing is done
         self.saverCounter = 0
         self.toggleSaver.start(1000)
+        
+    def simulateDisposalTrigger(self):
+        if self.simulationCounter == 50:
+            self.handleStatusChange("Calibration Complete, Open Disposal Valve")
+            self.disposeButton.setDisabled(False)
+            self.simulationCounter = 0
+            self.simulationTimer.stop()     
+        self.simulationCounter = self.simulationCounter + 1
         
      
     # Handler for when a previous Event is Clicked   
@@ -495,6 +531,8 @@ class HMIWindow(QWidget):
         # After Graphing is done
         self.saverCounter = 0
         self.toggleSaver.start(1000)
+        
+    
       
     # Working :)  
     def onPowerButtonClick(self):

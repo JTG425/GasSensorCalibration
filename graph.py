@@ -1,4 +1,5 @@
 import sys
+import ast
 from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QFrame
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QFont
@@ -44,9 +45,10 @@ class MakeGraph(QWidget):
        
        
         self.data = []
-        self.simulatedData = [1.27, 1.278, 1.363, 1.363, 1.449, 1.518, 1.627, 1.694, 1.731, 1.864, 2.053, 2.053, 2.21, 2.292, 2.292, 2.434, 2.629, 2.802, 2.802, 2.932, 3.054, 3.054, 3.215, 3.347, 3.347, 3.582, 3.702, 3.915, 3.915, 4.343, 4.692, 4.692, 5.435, 6.163, 6.163, 6.61, 6.89, 7.049, 7.049, 7.414, 7.874, 7.874, 8.65, 4.877, 4.877, 2.508, 1.795, 1.482, 1.482, 1.412, 1.244, 1.244, 1.202, 1.038, 1.173, 1.173, 1.096, 1.096, 1.109]
+        self.simulatedData = [1.27, 1.278, 1.363, 1.363, 1.449, 1.518, 1.627, 1.694, 1.731, 1.864, 2.053, 2.053, 2.21, 2.292, 2.292, 2.434, 2.629, 2.802, 2.802, 2.932, 3.054, 3.054, 3.215, 3.347, 3.347, 3.582, 3.702, 3.915, 3.915, 4.343, 4.692, 4.692, 5.435, 6.163, 6.163, 6.61, 6.89, 7.049, 7.049, 7.414, 7.874, 7.874, 8.65, 8.71, 8.68, 8.70, 8.71, 8.73, 8.68, 8.69, 8.70, 8.69, 8.68, 8.71, 8.70, 4.877, 4.877, 2.508, 1.795, 1.482, 1.482, 1.412, 1.244, 1.244, 1.202, 1.038, 1.173, 1.173, 1.096, 1.096, 1.109]
         self.time = []
         self.counter = 0
+        self.sensorTimer = QTimer(self)
        
         self.operation = "standby"
         self.initUI()
@@ -130,14 +132,14 @@ class MakeGraph(QWidget):
            
     def simulateSensorData(self):
         simulated_value = self.simulatedData[self.counter]
+        self.ppmValuesForLog.append(simulated_value)
+        
         self.data.append(simulated_value)
         self.time.append(self.counter)
-        self.counter += 1
         self.plotSensorData()
            
    
     def handleStart(self):
-        self.sensorTimer = QTimer(self)
         if not self.simulation:
             self.sensorTimer = QTimer(self)
             # Initialize I2C (SMbus)
@@ -164,36 +166,37 @@ class MakeGraph(QWidget):
     def handleDisposalClick(self):
         print("Disposal button pressed")
         self.disposal = True
-        self.showLiveGraph()    
+        self.sensorTimer.start(1000)
        
-   
-    def tempDisposal(self):
-        print("creating disposal graph")
-           
-        if self.disposal:
-            print("Disposal mode activated")
-            lastPPM = self.data[self.counter - 1]
-            for i in range(self.counter+1, self.counter + 20):
-                self.time[i] = i
-                self.data[i] = lastPPM - (i - self.counter)
-                if self.data[i] < 0:
-                    self.data[i] = 0
-                    self.timer.stop()
-                   
-            self.timer.start(1000)
            
            
     def plotSensorData(self):
+        if self.counter == 50 and not self.disposal:
+            print("Calibration Complete")
+            self.sensorTimer.stop()
+            
         self.data_line.setData(self.time, self.data)
+        self.counter += 1
+        
+        #Add Horzontal Line When counter == 50
+        if self.counter == 50:
+            self.graphWidget.addLine(x=49, pen=pg.mkPen('g', width=3))
+        
+        if self.counter == 70:
+            self.timeForLog = self.counter
+            self.maxPPMForLog = max(self.ppmValuesForLog)
+            self.graphWidget.clear()
+            self.counter = 0
+            self.writeToLog(self.dateForLog, self.timeForLog, self.maxPPMForLog, self.warningsForLog, self.leakTimeStamp, self.ppmValuesForLog)
+            
+            
+        
+        
        
        
     def handleEventClicked(self):
         print("Event button pressed")
-        self.showLive = False
-        self.sensorTimer.stop()
-           
-        self.graphWidget.clear()
-        self.counter = 0
+        
         self.showEventLog()
 
     def setEventTime(self, time):
@@ -201,6 +204,7 @@ class MakeGraph(QWidget):
 
     def setEventData(self, data):
         self.eventDataValues = data
+        
    
     def setEventDate(self, date):
         self.eventDateValue = date
@@ -211,11 +215,12 @@ class MakeGraph(QWidget):
         if self.eventTimeValue is None or self.eventDataValues == [] or self.eventDateValue is None:
             print("No data to show")
         else:
-            for i in range(self.eventTimeValue):
-                self.eventTime[i] = i
-                self.eventData[i] = self.eventDataValues[i]  
-            print(f"{self.eventDateValue} Data Plotting...")
+            self.eventTime = self.eventTimeValue
+            self.eventData = self.eventDataValues
             self.data_line.setData(self.eventTime, self.eventData)
+            self.graphWidget.setLabel('left', 'PPM', **{'font-size': '24pt'} , **{'color': '#ffffff'})
+            self.graphWidget.setLabel('bottom', 'Time (s)', **{'font-size': '24pt'},  **{'color': '#ffffff'})
+            self.graphWidget.getPlotItem().layout.setContentsMargins(0, 0, 0, 25)
 
            
 
