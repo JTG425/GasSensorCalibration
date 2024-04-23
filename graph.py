@@ -147,6 +147,9 @@ class MakeGraph(QWidget):
         self.counter = 0
         self.graphWidget.clear()
         self.graphWidget.setTitle(f'<span style="font-size: 24pt">Concentration In PPM</span>', color='w')
+        # Add Padding aroudn Title
+        self.graphWidget.getPlotItem().layout.setContentsMargins(25, 25, 25, 25)
+        
         self.data_line = self.graphWidget.plot(self.data, self.time, pen=pg.mkPen(self.graphLine, width=8))
         if self.warningText in self.graphWidget.getPlotItem().listDataItems():
             self.graphWidget.removeItem(self.warningText)

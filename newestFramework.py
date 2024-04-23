@@ -1,4 +1,6 @@
 import os, sys
+import psutil
+import logging
 import time
 import random
 from PyQt6 import QtCore, QtGui, QtWidgets
@@ -183,16 +185,12 @@ class HMIWindow(QWidget):
         self.shutDownButton.setFixedSize(550, 100)
         self.shutDownButton.clicked.connect(self.handleShutDown)
         
-        self.restartButton = QPushButton("Restart", self.powerOptions)
-        self.restartButton.setFixedSize(550, 100)
-        self.restartButton.clicked.connect(self.handleRestart)
 
         
         self.powerOptions.layout().setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.powerOptions.layout().addWidget(self.cancelButton)
         self.powerOptions.layout().addWidget(self.sleepButton)        
         self.powerOptions.layout().addWidget(self.shutDownButton)
-        self.powerOptions.layout().addWidget(self.restartButton)
 
         
 
@@ -303,14 +301,6 @@ class HMIWindow(QWidget):
         self.powerOptions.setStyleSheet(
             f"background-color: {windowBackground};"
             f"border: 1px solid {borders};"
-            "border-radius: 5px;"
-        )
-        self.restartButton.setStyleSheet(
-            f"color: white;"
-            f"background-color: {abortButtonColor};"
-            f"border: 1px solid {borders};"
-            "font-size: 24px;"
-            "padding: 10px;"
             "border-radius: 5px;"
         )
         
@@ -572,12 +562,6 @@ class HMIWindow(QWidget):
         sys.exit()
         
         
-    # Restart the Python Script (Not Working)
-    def handleRestart(self):
-        print("Restarting")
-        self.powerBackground.hide()
-        self.powerOptions.hide()
-        sys.exit()
 
 def main():
     app = QApplication(sys.argv)
