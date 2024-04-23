@@ -165,7 +165,6 @@ class MakeGraph(QWidget):
     
     def plotSensorData(self):
         if self.counter == 50 and not self.disposal:
-            print("Calibration Complete")
             self.sensorTimer.stop()
             
         self.data_line.setData(self.time, self.data)
@@ -184,7 +183,6 @@ class MakeGraph(QWidget):
             
         
     def handleAbort(self):
-        print("Abort button pressed")
         self.abort = True
         self.showLive = False
         self.sensorTimer.stop()
@@ -204,7 +202,6 @@ class MakeGraph(QWidget):
 
            
     def handleDisposalClick(self):
-        print("Disposal button pressed")
         self.disposal = True
         self.sensorTimer.start(1000)      
        
@@ -218,7 +215,6 @@ class MakeGraph(QWidget):
         self.eventData = eventDataValue
         self.eventMaxPPM = eventMaxPPMValue
         self.eventWarnings = eventWarningsValue
-        print(f"Event Data Received: \n {self.eventDate} \n {self.eventTime} \n {self.eventData} \n {self.eventMaxPPM} \n {self.eventWarnings}")
         self.sensorTimer.stop()
         self.graphWidget.clear()
         self.showEventLog()
