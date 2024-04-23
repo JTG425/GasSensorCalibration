@@ -90,6 +90,9 @@ class EventLog(QWidget):
         self.scrollArea.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignHCenter)
         self.raise_()
         
+        # Align Scroll Area Items to The Vertical Top
+        self.scrollLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        
         # Enable Touch Scrolling on the Scroll Area
         QScroller.grabGesture(self.scrollArea.viewport(), QScroller.ScrollerGestureType.TouchGesture)
         
