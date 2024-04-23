@@ -1,4 +1,5 @@
 import sys
+import ast
 from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, QScrollArea, QFrame, QScroller
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QColor, QPalette, QScreen
@@ -22,11 +23,6 @@ from graph import MakeGraph
 # --inprogress: #a4a452;
 # --warning: #a45252;
 
-'''
-    This class is responsible for creating the event log that displays the events that have taken place
-    The 'events.txt' file is populated with 
-
-'''
 
 windowBackground = "#18191b"
 buttonColor = "#0857a9"
@@ -62,10 +58,8 @@ def read_event(filename, line_number):
 
 class EventLog(QWidget):
     # Signals
-    eventSelected = pyqtSignal(int)
-    eventTime = pyqtSignal(int)
-    eventData = pyqtSignal(object)
-    eventDate = pyqtSignal(str)
+    eventData = pyqtSignal(str, int, float, str, list)
+    
     
     
     def __init__(self, parent=None):
@@ -126,17 +120,8 @@ class EventLog(QWidget):
             )
             self.scrollLayout.addWidget(frames[event_key])
             frames[event_key].setText(events[event_key][0])
-
-            # Sends Signal To Main Window When Event is Clicked To Display Calibration Data
-            frames[event_key].clicked.connect(lambda checked, eventId=i: self.eventSelected.emit(eventId))
             
-            # Sends Time Calibration Took To Graph.py For use as the x axis
-            frames[event_key].clicked.connect(lambda checked, eventId=i: self.eventTime.emit(int(events[f"event_{eventId}"][1])))
-            
-            # Sends Date Calibration Took Place To Graph.py
-            frames[event_key].clicked.connect(lambda checked, eventId=i: self.eventDate.emit(events[f"event_{eventId}"][0]))
-            
-            # Sends List of Calibration Data to Graph.py For use as the y axis
-            frames[event_key].clicked.connect(lambda checked, eventId=i: self.eventData.emit(events[f"event_{eventId}"][4]))
+            # Send Signal To Main Window When Event is Clicked, Which Will Send the "event" Signal with all corresponding data
+            frames[event_key].clicked.connect(lambda checked, i=i: self.eventData.emit(events[f"event_{i}"][0], int(events[f"event_{i}"][1]), float(events[f"event_{i}"][2]), events[f"event_{i}"][3], ast.literal_eval(events[f"event_{i}"][4])))
             
 

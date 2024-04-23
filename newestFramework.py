@@ -55,13 +55,21 @@ warningColor = "#780606"
 
 class HMIWindow(QWidget):
     sideBarShown = False;
+    
+
+    
+    
     def __init__(self):
         super().__init__()
         self.eventID = None
         self.toggleSaver = QTimer(self)
         self.toggleSaver.timeout.connect(self.toggleScreenSaver)
         self.toggleSaver.start(1000)  # Start the timer with 1-second intervals
-        self.saverCounter = 0;
+        self.saverCounter = 0
+        self.graph = MakeGraph(self)
+        self.sidebar = EventLog(self)
+        self.sidebar.eventData.connect(self.graph.handleEventData)
+        self.sidebar.eventData.connect(self.onEventSelected)
         self.initializeUI()
 
 
@@ -81,7 +89,7 @@ class HMIWindow(QWidget):
         )
         gridLayout = QGridLayout(self)  # Initialize a QGridLayout
         gridLayout.setContentsMargins(10, 10, 10, 10)
-        self.sidebar = EventLog(self)
+
 
         # Creates a Screesaver like effect THat will snow the Time and when
         # anywhere on screen is clicked, the main screen shows.
@@ -116,13 +124,7 @@ class HMIWindow(QWidget):
         
         self.sidebar.move(QPoint(-10,-10))
         self.sidebar.hide()
-        self.graph = MakeGraph(self)
-        
-        # Signal Connections
-        self.sidebar.eventTime.connect(self.graph.setEventTime)
-        self.sidebar.eventData.connect(self.graph.setEventData)
-        self.sidebar.eventDate.connect(self.graph.setEventDate)
-        self.sidebar.eventSelected.connect(self.onEventSelected)
+
         
         # Call CreateElements Function
         self.createElements(gridLayout)
@@ -429,7 +431,11 @@ class HMIWindow(QWidget):
         self.handleStatusChange("Aborting Calibration")
         self.graph.handleAbort()
         
-        # After Aborting Is Done
+        QTimer.singleShot(5000, self.postAbortActions)  # 5000 ms = 5 seconds
+
+    def postAbortActions(self):
+        # Actions to be taken after the delay
+        self.handleStatusChange("Standby")
         self.saverCounter = 0
         self.toggleSaver.start(1000)
         
@@ -519,11 +525,9 @@ class HMIWindow(QWidget):
         self.saverCounter = 0
         self.toggleSaver.stop()
         
-        
         # Call the method on MakeGraph to show the event log graph
         self.toggleEventLog()                                           # Close the event log sidebar
-        self.handleStatusChange("Showing Previous Event")               # Change the status label
-        self.graph.handleEventClicked()                                 # Show the event log graph
+        self.handleStatusChange("Showing Previous Event")               # Change the status label                              # Show the event log graph
         
         # Make The Abort Button UnClickable
         self.abortButton.setDisabled(True)

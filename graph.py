@@ -4,6 +4,7 @@ from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QFrame
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QFont
 import pyqtgraph as pg
+from pyqtgraph import TextItem
 # import smbus
 import time
 from datetime import datetime
@@ -16,6 +17,10 @@ class MakeGraph(QWidget):
    
     eventTime = []  # Event Time Points
     eventData = []  # Event Data Points
+    eventDate = ""
+    eventMaxPPM = 0
+    eventWarnings = ""
+    
     timeNow = datetime.now()
     counter = 0
    
@@ -36,8 +41,6 @@ class MakeGraph(QWidget):
         self.disposal = False
         self.leak = False
         self.abort = False
-        self.eventDataValues = {}
-        self.eventDateValue = None
        
         # False: Running On PI With Sensor
         # True: Running On Computer Without Sensor
@@ -49,6 +52,7 @@ class MakeGraph(QWidget):
         self.time = []
         self.counter = 0
         self.sensorTimer = QTimer(self)
+        self.warningText = pg.LabelItem(f"Warnings: {self.eventWarnings}", color='w', size='24pt')
        
         self.operation = "standby"
         self.initUI()
@@ -77,7 +81,6 @@ class MakeGraph(QWidget):
         self.graphWidget.setBackground(self.graphBackground)
         self.graphWidget.showGrid(x=True, y=True)
         self.graphWidget.setTitle('<span style="font-size: 32pt">Concentration In PPM</span>', color='w')
-        self.data_line = self.graphWidget.plot(self.data, self.time, pen=pg.mkPen(self.graphLine, width=8))
        
         # Increase the font size for axis labels
         axisFont = QFont()
@@ -87,6 +90,7 @@ class MakeGraph(QWidget):
        
         self.graphWidget.setLabel('left', 'PPM', **{'font-size': '32pt'} , **{'color': '#ffffff'})
         self.graphWidget.setLabel('bottom', 'Time (s)', **{'font-size': '32pt'},  **{'color': '#ffffff'})
+        self.graphWidget.setMouseEnabled(x=False, y=False)
         layout.addWidget(self.graphFrame)  # Add the graphFrame to the main layout
            
     def showStandByGraph(self):
@@ -132,18 +136,24 @@ class MakeGraph(QWidget):
     def simulateSensorData(self):
         simulated_value = self.simulatedData[self.counter]
         self.ppmValuesForLog.append(simulated_value)
-        
         self.data.append(simulated_value)
         self.time.append(self.counter)
         self.plotSensorData()
            
    
     def handleStart(self):
+        self.abort = False
+        self.showLive = True
+        self.counter = 0
+        self.graphWidget.clear()
+        self.graphWidget.setTitle(f'<span style="font-size: 24pt">Concentration In PPM</span>', color='w')
+        self.data_line = self.graphWidget.plot(self.data, self.time, pen=pg.mkPen(self.graphLine, width=8))
+        if self.warningText in self.graphWidget.getPlotItem().listDataItems():
+            self.graphWidget.removeItem(self.warningText)
         if not self.simulation:
             self.sensorTimer = QTimer(self)
             # Initialize I2C (SMbus)
             #bus = smbus.SMBus(1)
-   
             # Sensor I2C Address
             sensor_address = 0x50
             #self.sensorTimer.timeout.connect(lambda: self.handleSensorRead(bus, sensor_address))
@@ -151,24 +161,8 @@ class MakeGraph(QWidget):
             self.sensorTimer.timeout.connect(self.simulateSensorData)
 
         self.sensorTimer.start(1000)
-       
-    def handleAbort(self):
-        print("Abort button pressed")
-        self.abort = True
-        self.showLive = False
-        self.sensorTimer.stop()
-        self.graphWidget.clear()
-        self.counter = 0
-         
-
-           
-    def handleDisposalClick(self):
-        print("Disposal button pressed")
-        self.disposal = True
-        self.sensorTimer.start(1000)
-       
-           
-           
+        
+    
     def plotSensorData(self):
         if self.counter == 50 and not self.disposal:
             print("Calibration Complete")
@@ -188,40 +182,86 @@ class MakeGraph(QWidget):
             self.counter = 0
             self.writeToLog(self.dateForLog, self.timeForLog, self.maxPPMForLog, self.warningsForLog, self.leakTimeStamp, self.ppmValuesForLog)
             
-            
         
+    def handleAbort(self):
+        print("Abort button pressed")
+        self.abort = True
+        self.showLive = False
+        self.sensorTimer.stop()
+        self.graphWidget.clear()
+        self.warningsForLog = 'Aborted'
+        self.timeForLog = self.counter
+        self.maxPPMForLog = max(self.ppmValuesForLog)
+        self.counter = 0
+        self.writeToLog(self.dateForLog, self.timeForLog, self.maxPPMForLog, self.warningsForLog, self.leakTimeStamp, self.ppmValuesForLog)
+        self.resetGraphViewport()
         
-       
+    def resetGraphViewport(self):
+        self.graphWidget.setXRange(0, 1, padding=0)
+        self.graphWidget.setYRange(0, 1, padding=0)
+        self.data_line = self.graphWidget.plot(pen=pg.mkPen(self.graphLine, width=8))
+         
+
+           
+    def handleDisposalClick(self):
+        print("Disposal button pressed")
+        self.disposal = True
+        self.sensorTimer.start(1000)      
        
     def handleEventClicked(self):
         print("Event button pressed")
+
+    def handleEventData(self, eventDateValue, eventTimeValue, eventMaxPPMValue, eventWarningsValue, eventDataValue):
+        self.eventDate = eventDateValue
+        for i in range(eventTimeValue):
+            self.eventTime.append(i)
+        self.eventData = eventDataValue
+        self.eventMaxPPM = eventMaxPPMValue
+        self.eventWarnings = eventWarningsValue
+        print(f"Event Data Received: \n {self.eventDate} \n {self.eventTime} \n {self.eventData} \n {self.eventMaxPPM} \n {self.eventWarnings}")
+        self.sensorTimer.stop()
+        self.graphWidget.clear()
         self.showEventLog()
-
-    def setEventTime(self, time):
-        self.eventTimeValue = time
-        if time is not None:
-            for i in range(self.eventTimeValue):
-                self.eventTime.append(i)
-
-    def setEventData(self, data):
-        self.eventData = data
         
-    def setEventDate(self, date):
-        self.eventDateValue = date
+    def clearEventData(self):
+        self.eventDate = ""
+        self.eventTime = []
+        self.eventData = []
+        self.eventMaxPPM = 0
+        self.eventWarnings = ""
+        # Delete the previous warning text
+        if self.warningText in self.graphWidget.getPlotItem().listDataItems():
+            self.graphWidget.removeItem(self.warningText)
+        
 
     def showEventLog(self):
-        self.graphWidget.setTitle(f'<span style="font-size: 24pt">Calibration Performed on {self.eventDateValue}</span>', color='w')
-       
-        if self.eventTimeValue is None or self.eventDataValues == [] or self.eventDateValue is None:
-            print("No data to show")
-        else:
-            print(self.eventTime)
-            print(self.eventData)
-            self.data_line.setData(self.eventTime, self.eventData)
-            self.graphWidget.setLabel('left', 'PPM', **{'font-size': '24pt'} , **{'color': '#ffffff'})
-            self.graphWidget.setLabel('bottom', 'Time (s)', **{'font-size': '24pt'},  **{'color': '#ffffff'})
-            self.graphWidget.getPlotItem().layout.setContentsMargins(0, 0, 0, 25)
+        self.graphWidget.setTitle(f'<span style="font-size: 24pt">Calibration Performed on {self.eventDate}</span>', color='w')
+        self.data_line_event = self.graphWidget.plot(self.eventData, self.eventTime, pen=pg.mkPen(self.graphLine, width=8))
+        self.data_line_event.setData(self.eventTime, self.eventData)
+        self.graphWidget.setLabel('left', 'PPM', **{'font-size': '24pt'}, **{'color': '#ffffff'})
+        self.graphWidget.setLabel('bottom', 'Time (s)', **{'font-size': '24pt'},  **{'color': '#ffffff'})
+        self.graphWidget.getPlotItem().layout.setContentsMargins(0, 0, 0, 25)
+        if self.eventWarnings == 'No Warnings':
+            self.graphWidget.addLine(x=49, pen=pg.mkPen('g', width=3))
 
+        self.warningText.setText(f"Warnings: {self.eventWarnings}")
+        self.warningText.setParentItem(self.graphWidget.getPlotItem())
+        self.warningText.setPos(100, 0)
+        
+
+        
+            
+        
+            
+            
+            
+            
+        maxPPMText = TextItem(f"Max PPM: {self.eventMaxPPM}", anchor=(0, 1), color='white')
+
+
+        self.graphWidget.setXRange(min(self.eventTime), max(self.eventTime), padding=0.05)
+        self.graphWidget.setYRange(min(self.eventData), max(self.eventData), padding=0.05)
+        self.clearEventData()
            
 
 
