@@ -3,5 +3,5 @@ Have Each Calibration Output a Log to this file
 -> Line 1: <Date>
 -> Line 2: <TimeToCompletion(Seconds)>
 -> Line 3: <MaxPPM>
--> Line 4: <WarningsTriggered?>  (True Or False)
+-> Line 4: <WarningsTriggered?>
 -> Line 5: PPM Values separated by a space (For Graph Reconstruction)
