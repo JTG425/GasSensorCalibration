@@ -1,5 +1,0 @@
-1. When Clicking An Event Log Button, The data is delayed
-and displays the previous plot before clicking again and
-displaying the proper data. This could be an issue with the
-Signal Slots
--> Possible Soltion: Merging the Event Log and Graph Classes to remove the need for Slots
