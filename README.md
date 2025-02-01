@@ -1,3 +1,5 @@
+To Run Locally: "pip install -r requirements.txt" then Run the newestFramework.py program
+
 For the culmination of my Bachelors Degree for Electrical And Computer Engeering, I Worked with three other students to plan, design, and create a
 Capstone Design Project that employed skills I have learned throughout my 5 years at The Ohio State University. After much deliberation, my team
 decided to address issues surrounding Marathon Gas Companies current process involving calibrating their gas sensors.
